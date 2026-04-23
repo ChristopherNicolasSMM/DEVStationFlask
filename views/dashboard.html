@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — DevStation{% endblock %}
+
+{% block content %}
+
+<!-- Page Title -->
+<div class="pagetitle">
+  <h1>Meus Projetos</h1>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ── Action bar ────────────────────────────────────── -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <span class="text-muted" style="font-size:14px;">
+    <i class="bi bi-folder2-open me-1"></i>
+    <strong>{{ projects|length }}</strong> projeto(s)
+  </span>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoProjeto">
+    <i class="bi bi-plus-lg me-1"></i>Novo Projeto
+  </button>
+</div>
+
+{% if projects %}
+<!-- ── Project Grid ──────────────────────────────────── -->
+<div class="row g-4" id="gridProjetos">
+  {% for p in projects %}
+  <div class="col-xl-3 col-lg-4 col-md-6" id="card-{{ p.id }}">
+    <div class="proj-card" onclick="window.location='/designer/{{ p.id }}'">
+
+      <!-- Thumbnail -->
+      <div class="proj-thumb">
+        <i class="bi bi-layout-wtf"></i>
+      </div>
+
+      <!-- Body -->
+      <div class="card-body">
+        <div class="proj-title" title="{{ p.name }}">{{ p.name }}</div>
+        <div class="proj-meta">
+          <small><i class="bi bi-files"></i> {{ p.page_count }} página(s)</small>
+          <small>
+            <i class="bi bi-clock"></i>
+            {{ p.updated_at.strftime('%d/%m/%Y %H:%M') if p.updated_at else '—' }}
+          </small>
+        </div>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="card-footer">
+        <a href="/designer/{{ p.id }}"
+           class="btn btn-sm btn-primary flex-fill"
+           onclick="event.stopPropagation()">
+          <i class="bi bi-pencil-fill me-1"></i>Designer
+        </a>
+        <a href="/projetos/{{ p.id }}/preview/{{ p.pages[0].id if p.pages else 0 }}"
+           target="_blank"
+           class="btn btn-sm btn-outline-info"
+           onclick="event.stopPropagation()" title="Preview">
+          <i class="bi bi-eye-fill"></i>
+        </a>
+        <a href="/projetos/{{ p.id }}/exportar"
+           class="btn btn-sm btn-outline-success"
+           onclick="event.stopPropagation()" title="Exportar ZIP">
+          <i class="bi bi-download"></i>
+        </a>
+        <button class="btn btn-sm btn-outline-danger btn-del"
+                data-id="{{ p.id }}"
+                onclick="event.stopPropagation()" title="Deletar projeto">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<!-- ── Empty state ───────────────────────────────────── -->
+<div class="empty-state">
+  <i class="bi bi-layout-wtf empty-icon"></i>
+  <h5>Nenhum projeto ainda</h5>
+  <p class="mb-4">Crie seu primeiro projeto e comece a construir<br>páginas visualmente com drag &amp; drop.</p>
+  <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalNovoProjeto">
+    <i class="bi bi-plus-lg me-1"></i>Criar Primeiro Projeto
+  </button>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  /* ── Deletar projeto ─────────────────────────────── */
+  document.querySelectorAll('.btn-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const pname = btn.closest('.proj-card')?.querySelector('.proj-title')?.textContent?.trim() || 'este projeto';
+      if (!confirm(`Deletar "${pname}" permanentemente?\nEsta ação não pode ser desfeita.`)) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+      try {
+        const pid = btn.dataset.id;
+        const r   = await fetch(`/projetos/${pid}/deletar`, { method: 'POST' });
+        const d   = await r.json();
+        if (d.ok) {
+          const card = document.getElementById(`card-${pid}`);
+          card.style.transition = 'opacity .3s, transform .3s';
+          card.style.opacity    = '0';
+          card.style.transform  = 'scale(.9)';
+          setTimeout(() => {
+            card.remove();
+            if (!document.querySelector('.btn-del')) location.reload();
+          }, 300);
+        }
+      } catch (err) {
+        alert('Erro ao deletar: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-trash3"></i>';
+      }
+    });
+  });
+</script>
+{% endblock %}

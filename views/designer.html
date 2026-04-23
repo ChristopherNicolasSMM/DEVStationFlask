@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--<title>Designer — {{ project.name }}</title>-->
+  <title>{% block title %}DevStation{% endblock %}</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/static/assets/css/style.css" rel="stylesheet">
+  <link href="/static/css/designer.css" rel="stylesheet">
+</head>
+
+<body class="designer-body">
+
+  <!-- ═══════════════════════ MENUBAR ═══════════════════════ -->
+  <nav class="menubar" id="menubar">
+    <div class="menubar-brand">
+      <i class="bi bi-layout-wtf text-primary"></i>
+      <span>DevStation</span><!-- aqui -->
+    </div>
+
+
+<<<<<<< HEAD
+    <div class="dsb-header-right">
+=======
+      <div class="dsb-header-right">
+>>>>>>> temp-ponto-seguro
+      <button class="tb-btn" id="btnSnap" title="Snap" data-active="true"><a href="/" class="tb-btn" id="btnSnap"
+          title="Dashboard"><i class="bi bi-house-fill"></i></a></button>
+    </div>
+
+<<<<<<< HEAD
+    <!-- Menu items from server-side config -->
+    {% for key, menu in menu_config.items() %}
+    <div class="menubar-item dropdown">
+      <button class="menubar-btn dropdown-toggle" data-bs-toggle="dropdown">
+        {{ menu.get('label', key) }}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        {% for item in menu.get('items', []) %}
+=======
+
+  <!-- Menu items from server-side config -->
+  {% for key, menu in menu_config.items() %}
+  <div class="menubar-item dropdown">
+    <button class="menubar-btn dropdown-toggle" data-bs-toggle="dropdown">
+      {{ menu.get('label', key) }}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-dark">
+      {% for item in menu.get('items', []) %}
+>>>>>>> temp-ponto-seguro
+        {% if item.get('separator') %}
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        {% else %}
+        <li>
+          <a class="dropdown-item d-flex justify-content-between align-items-center" href="#"
+            data-action="{{ item.get('action','') }}">
+            <span>{{ item.label }}</span>
+            {% if item.get('shortcut') %}
+            <kbd class="kbd-hint">{{ item.shortcut }}</kbd>
+            {% endif %}
+          </a>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+
+<<<<<<< HEAD
+    <!-- Toolbar rápida -->
+    <div class="menubar-toolbar ms-2 d-flex align-items-center gap-1">
+      <button class="tb-btn" id="btnUndo" title="Desfazer Ctrl+Z"><i class="bi bi-arrow-counterclockwise"></i></button>
+      <button class="tb-btn" id="btnRedo" title="Refazer Ctrl+Y"><i class="bi bi-arrow-clockwise"></i></button>
+      <div class="vr mx-1"></div>
+      <button class="tb-btn" id="btnGrid" title="Grade" data-active="true"><i class="bi bi-grid-3x3"></i></button>
+      <button class="tb-btn" id="btnSnap" title="Snap" data-active="true"><i class="bi bi-magnet"></i></button>
+      <div class="vr mx-1"></div>
+      <!-- Canvas size -->
+      <div class="d-flex align-items-center gap-1" style="font-size:11px;">
+        <span class="text-muted">W</span>
+        <input type="number" id="inputCanvasW" class="tb-input" value="{{ current_page.canvas_w or project.canvas_w }}"
+          min="320" step="10">
+        <span class="text-muted">H</span>
+        <input type="number" id="inputCanvasH" class="tb-input" value="{{ current_page.canvas_h or project.canvas_h }}"
+          min="200" step="10">
+        <input type="color" id="inputCanvasBg" value="{{ current_page.canvas_bg or project.canvas_bg }}"
+          title="Cor de fundo"
+          style="width:26px;height:26px;padding:1px;border-radius:3px;border:1px solid #555;cursor:pointer;">
+=======
+  <!-- Direita -->
+  <div class="ms-auto d-flex align-items-center gap-2 pe-3">
+    <span id="statusSave" class="text-muted" style="font-size:11px;"></span>
+    <!-- Zoom -->
+    <div class="d-flex align-items-center gap-1">
+      <button class="tb-btn" id="btnZoomOut"><i class="bi bi-dash"></i></button>
+      <span id="zoomLabel" class="text-muted" style="font-size:11px;min-width:36px;text-align:center;">100%</span>
+      <button class="tb-btn" id="btnZoomIn"><i class="bi bi-plus"></i></button>
+      <button class="tb-btn" id="btnZoomReset">⊞</button>
+    </div>
+    <div class="vr"></div>
+    <!-- Projeto / página -->
+    <span id="lblNome" class="fw-semibold" style="color:#c8d4ff;font-size:13px;cursor:pointer;"
+          title="Renomear projeto">{{ project.name }}</span>
+    <div class="vr"></div>
+    <button class="btn btn-sm btn-outline-info" id="btnPreview" title="Preview F5">
+      <i class="bi bi-eye me-1"></i>Preview
+    </button>
+    <button class="btn btn-sm btn-outline-success" id="btnExport">
+      <i class="bi bi-download me-1"></i>Export ZIP
+    </button>
+    <button class="btn btn-sm btn-primary" id="btnSave" title="Salvar Ctrl+S">
+      <i class="bi bi-floppy me-1"></i>Salvar
+    </button>
+
+          <div class="dsb-header-right">
+        <button class="tb-btn" id="btnSnap" title="Snap" data-active="true"><a href="/" class="tb-btn" id="btnSnap"
+            title="Dashboard"><i class="bi bi-house-fill"></i></a></button>
+      </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════ LAYOUT ════════════════════════ -->
+<div class="designer-layout">
+
+  <!-- ── LEFT PANEL ──────────────────────────────────────── -->
+  <aside class="left-panel" id="leftPanel">
+
+    <!-- Abas do painel -->
+    <div class="panel-tabs">
+      <button class="ptab active" data-tab="tab-palette" title="Componentes"><i class="bi bi-grid-3x3-gap"></i></button>
+      <button class="ptab" data-tab="tab-pages"   title="Páginas"><i class="bi bi-files"></i></button>
+      <button class="ptab" data-tab="tab-outline" title="Outline"><i class="bi bi-list-nested"></i></button>
+    </div>
+
+    <!-- Tab: Paleta de Componentes -->
+    <div id="tab-palette" class="panel-tab-content active">
+      <div class="panel-search">
+        <input type="text" id="paletteSearch" class="form-control form-control-sm" placeholder="Buscar...">
+>>>>>>> temp-ponto-seguro
+      </div>
+    </div>
+
+    <!-- Direita -->
+    <div class="ms-auto d-flex align-items-center gap-2 pe-3">
+      <span id="statusSave" class="text-muted" style="font-size:11px;"></span>
+      <!-- Zoom -->
+      <div class="d-flex align-items-center gap-1">
+        <button class="tb-btn" id="btnZoomOut"><i class="bi bi-dash"></i></button>
+        <span id="zoomLabel" class="text-muted" style="font-size:11px;min-width:36px;text-align:center;">100%</span>
+        <button class="tb-btn" id="btnZoomIn"><i class="bi bi-plus"></i></button>
+        <button class="tb-btn" id="btnZoomReset">⊞</button>
+      </div>
+      <div class="vr"></div>
+      <!-- Projeto / página -->
+      <span id="lblNome" class="fw-semibold" style="color:#c8d4ff;font-size:13px;cursor:pointer;"
+        title="Renomear projeto">{{ project.name }}</span>
+      <div class="vr"></div>
+      <button class="btn btn-sm btn-outline-info" id="btnPreview" title="Preview F5">
+        <i class="bi bi-eye me-1"></i>Preview
+      </button>
+      <button class="btn btn-sm btn-outline-success" id="btnExport">
+        <i class="bi bi-download me-1"></i>Export ZIP
+      </button>
+      <button class="btn btn-sm btn-primary" id="btnSave" title="Salvar Ctrl+S">
+        <i class="bi bi-floppy me-1"></i>Salvar
+      </button>
+
+      <!-- Home -->
+
+      <div class="dsb-header-right">
+        <button class="tb-btn" id="btnSnap" title="Snap" data-active="true"><a href="/" class="tb-btn" id="btnSnap"
+            title="Dashboard"><i class="bi bi-house-fill"></i></a></button>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════ LAYOUT ════════════════════════ -->
+  <div class="designer-layout">
+
+    <!-- ── LEFT PANEL ──────────────────────────────────────── -->
+    <aside class="left-panel" id="leftPanel">
+
+      <!-- Abas do painel -->
+      <div class="panel-tabs">
+        <button class="ptab active" data-tab="tab-palette" title="Componentes"><i
+            class="bi bi-grid-3x3-gap"></i></button>
+        <button class="ptab" data-tab="tab-pages" title="Páginas"><i class="bi bi-files"></i></button>
+        <button class="ptab" data-tab="tab-outline" title="Outline"><i class="bi bi-list-nested"></i></button>
+      </div>
+
+      <!-- Tab: Paleta de Componentes -->
+      <div id="tab-palette" class="panel-tab-content active">
+        <div class="panel-search">
+          <input type="text" id="paletteSearch" class="form-control form-control-sm" placeholder="Buscar...">
+        </div>
+        <div id="paletteContent" class="palette-content">
+          {% for group in registry %}
+          <div class="palette-group" data-group="{{ group['group'] }}">
+            <div class="palette-group-title">{{ group['group'] }}</div>
+            {% for comp in group['items'] %}
+            <div class="palette-item" draggable="true" data-type="{{ comp['type'] }}" data-label="{{ comp['label'] }}"
+              data-w="{{ comp['default_size']['width'] }}" data-h="{{ comp['default_size']['height'] }}">
+              <i class="bi {{ comp['icon'] }}"></i>
+              <span>{{ comp['label'] }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Tab: Páginas -->
+      <div id="tab-pages" class="panel-tab-content">
+        <div class="px-2 py-2 border-bottom d-flex justify-content-between align-items-center">
+          <small class="fw-semibold text-muted">PÁGINAS</small>
+          <button class="btn btn-xs btn-outline-primary" id="btnNewPage" title="Nova Página">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+        <div id="pagesList">
+          {% for pg in all_pages %}
+          <div class="page-item {{ 'active' if pg.id == current_page.id else '' }}" data-pgid="{{ pg.id }}"
+            data-pid="{{ project.id }}">
+            <i class="bi bi-file-earmark-text"></i>
+            <span class="page-name">{{ pg.name }}</span>
+            {% if pg.is_home %}<i class="bi bi-house-fill text-primary ms-auto" title="Página inicial"></i>{% endif %}
+            {% if not pg.is_home %}
+            <button class="btn-page-del" data-pgid="{{ pg.id }}" title="Deletar">
+              <i class="bi bi-trash"></i>
+            </button>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Tab: Outline (árvore de componentes) -->
+      <div id="tab-outline" class="panel-tab-content">
+        <div class="px-2 py-2 border-bottom">
+          <small class="fw-semibold text-muted">OUTLINE</small>
+        </div>
+        <div id="outlineList" class="outline-list"></div>
+      </div>
+    </aside>
+
+    <!-- ── CANVAS AREA ─────────────────────────────────────── -->
+    <main class="canvas-area" id="canvasArea">
+      <div class="canvas-scroll-wrap" id="canvasScrollWrap">
+        <div id="canvas" class="canvas-board" style="width:{{ current_page.canvas_w or project.canvas_w }}px;
+                  min-height:{{ current_page.canvas_h or project.canvas_h }}px;
+                  background:{{ current_page.canvas_bg or project.canvas_bg }};">
+          <!-- Hint quando vazio -->
+          <div id="canvasHint" class="canvas-hint">
+            <i class="bi bi-cursor-fill d-block mb-2"></i>
+            Arraste componentes da paleta para cá
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ── RIGHT PANEL ─────────────────────────────────────── -->
+    <aside class="right-panel" id="rightPanel">
+
+      <!-- Abas do painel direito -->
+      <div class="panel-tabs">
+        <button class="ptab active" data-tab="rp-props" title="Propriedades"><i class="bi bi-sliders"></i></button>
+        <button class="ptab" data-tab="rp-events" title="Eventos"><i class="bi bi-lightning-charge"></i></button>
+        <button class="ptab" data-tab="rp-rules" title="Regras"><i class="bi bi-funnel"></i></button>
+      </div>
+
+      <!-- ── Propriedades ── -->
+      <div id="rp-props" class="panel-tab-content active">
+        <div id="propsEmpty" class="panel-empty">
+          <i class="bi bi-cursor d-block mb-2"></i>
+          Selecione um componente
+        </div>
+        <div id="propsForm" style="display:none;">
+          <!-- Nome / tipo -->
+          <div class="props-section">
+            <div class="props-row">
+              <div class="props-col">
+                <label class="props-label">Nome</label>
+                <input type="text" id="propName" class="form-control form-control-sm">
+              </div>
+              <div class="props-col">
+                <label class="props-label">Tipo</label>
+                <input type="text" id="propType" class="form-control form-control-sm" readonly>
+              </div>
+            </div>
+          </div>
+
+          <!-- Posição & Tamanho -->
+          <div class="props-section">
+            <div class="props-section-title">Layout</div>
+            <div class="props-row">
+              <div class="props-col"><label class="props-label">X</label>
+                <input type="number" id="propX" class="form-control form-control-sm">
+              </div>
+              <div class="props-col"><label class="props-label">Y</label>
+                <input type="number" id="propY" class="form-control form-control-sm">
+              </div>
+            </div>
+            <div class="props-row">
+              <div class="props-col"><label class="props-label">Largura</label>
+                <input type="number" id="propW" class="form-control form-control-sm">
+              </div>
+              <div class="props-col"><label class="props-label">Altura</label>
+                <input type="number" id="propH" class="form-control form-control-sm">
+              </div>
+            </div>
+            <div class="props-row">
+              <div class="props-col"><label class="props-label">Z-Index</label>
+                <input type="number" id="propZ" class="form-control form-control-sm" min="0">
+              </div>
+              <div class="props-col align-self-end d-flex gap-1">
+                <button class="btn btn-xs btn-outline-secondary flex-fill" id="btnZUp" title="Trazer à frente">
+                  <i class="bi bi-arrow-up"></i>
+                </button>
+                <button class="btn btn-xs btn-outline-secondary flex-fill" id="btnZDown" title="Enviar atrás">
+                  <i class="bi bi-arrow-down"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Propriedades dinâmicas do componente -->
+          <div class="props-section" id="sectionDynamic">
+            <div class="props-section-title">Propriedades</div>
+            <div id="dynamicProps"></div>
+          </div>
+
+          <!-- Tipografia -->
+          <div class="props-section" id="sectionTypo" style="display:none;">
+            <div class="props-section-title">Tipografia</div>
+            <div class="props-row">
+              <div class="props-col">
+                <label class="props-label">Tamanho px</label>
+                <input type="number" id="propFontSize" class="form-control form-control-sm" min="8" max="96">
+              </div>
+              <div class="props-col">
+                <label class="props-label">Cor texto</label>
+                <input type="color" id="propTextColor" class="form-control form-control-sm form-control-color w-100">
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-xs btn-outline-secondary flex-fill" id="propBold" title="Negrito"><i
+                  class="bi bi-type-bold"></i></button>
+              <button class="btn btn-xs btn-outline-secondary flex-fill" id="propItalic" title="Itálico"><i
+                  class="bi bi-type-italic"></i></button>
+              <button class="btn btn-xs btn-outline-secondary flex-fill" data-align="left" title="Esquerda"><i
+                  class="bi bi-text-left"></i></button>
+              <button class="btn btn-xs btn-outline-secondary flex-fill" data-align="center" title="Centro"><i
+                  class="bi bi-text-center"></i></button>
+              <button class="btn btn-xs btn-outline-secondary flex-fill" data-align="right" title="Direita"><i
+                  class="bi bi-text-right"></i></button>
+            </div>
+          </div>
+
+          <!-- Visual -->
+          <div class="props-section">
+            <div class="props-section-title">Aparência</div>
+            <div class="props-row">
+              <div class="props-col">
+                <label class="props-label">Fundo</label>
+                <input type="color" id="propBgColor" class="form-control form-control-sm form-control-color w-100"
+                  value="#4154f1">
+              </div>
+              <div class="props-col">
+                <label class="props-label">Border Radius</label>
+                <input type="number" id="propRadius" class="form-control form-control-sm" min="0" max="50" value="4">
+              </div>
+            </div>
+            <div class="mt-2">
+              <label class="props-label">Classes Bootstrap extras</label>
+              <input type="text" id="propClasses" class="form-control form-control-sm"
+                placeholder="shadow-sm text-center ...">
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="props-section">
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary flex-fill" id="btnDuplicate">
+                <i class="bi bi-copy me-1"></i>Duplicar
+              </button>
+              <button class="btn btn-sm btn-outline-danger flex-fill" id="btnDelete">
+                <i class="bi bi-trash me-1"></i>Deletar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Eventos ── -->
+      <div id="rp-events" class="panel-tab-content">
+        <div id="eventsEmpty" class="panel-empty">
+          <i class="bi bi-lightning d-block mb-2"></i>
+          Selecione um componente
+        </div>
+        <div id="eventsForm" style="display:none;">
+          <div class="px-2 pt-2 pb-1">
+            <small class="text-muted">Associe ações a eventos do componente selecionado.</small>
+          </div>
+          <div id="eventsList" class="events-list"></div>
+          <div class="px-2 pb-2">
+            <button class="btn btn-sm btn-outline-primary w-100" id="btnAddEvent">
+              <i class="bi bi-plus-lg me-1"></i>Adicionar Evento
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Regras ── -->
+      <div id="rp-rules" class="panel-tab-content">
+        <div id="rulesEmpty" class="panel-empty">
+          <i class="bi bi-funnel d-block mb-2"></i>
+          Selecione um componente
+        </div>
+        <div id="rulesForm" style="display:none;">
+          <div class="px-2 pt-2 pb-1">
+            <small class="text-muted">Regras de validação, visibilidade e cálculo.</small>
+          </div>
+          <div id="rulesList" class="rules-list"></div>
+          <div class="px-2 pb-2">
+            <button class="btn btn-sm btn-outline-primary w-100" id="btnAddRule">
+              <i class="bi bi-plus-lg me-1"></i>Adicionar Regra
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ══ CONTEXT MENU ═══════════════════════════════════════ -->
+  <div id="ctxMenu" class="ctx-menu" style="display:none;">
+    <div class="ctx-item" data-action="duplicate"><i class="bi bi-copy"></i> Duplicar</div>
+    <div class="ctx-item" data-action="layer_up"><i class="bi bi-arrow-up"></i> Trazer à frente</div>
+    <div class="ctx-item" data-action="layer_dn"><i class="bi bi-arrow-down"></i> Enviar atrás</div>
+    <div class="ctx-item" data-action="align_left"><i class="bi bi-align-start"></i> Alinhar Esquerda</div>
+    <div class="ctx-item" data-action="align_center"><i class="bi bi-align-center"></i> Centralizar</div>
+    <div class="ctx-item" data-action="align_right"><i class="bi bi-align-end"></i> Alinhar Direita</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item text-danger" data-action="delete"><i class="bi bi-trash"></i> Deletar</div>
+  </div>
+
+  <!-- ══ MODAL: Add Event ═══════════════════════════════════ -->
+  <div class="modal fade" id="modalAddEvent" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="bi bi-lightning me-2 text-warning"></i>Adicionar Evento</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Evento</label>
+            <select id="selEvent" class="form-select form-select-sm bg-dark text-light border-secondary"></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ação Pré-definida</label>
+            <select id="selAction" class="form-select form-select-sm bg-dark text-light border-secondary">
+              <option value="">— Código customizado —</option>
+            </select>
+          </div>
+          <div id="actionParamsArea" class="mb-3" style="display:none;"></div>
+          <div class="mb-2">
+            <label class="form-label">Código JS (gerado ou personalizado)</label>
+            <textarea id="eventCode" class="form-control form-control-sm bg-dark text-light border-secondary" rows="5"
+              placeholder="// seu código aqui&#10;console.log('clicou!');"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-warning" id="btnSaveEvent">
+            <i class="bi bi-check-lg me-1"></i>Salvar Evento
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Add Rule ════════════════════════════════════ -->
+  <div class="modal fade" id="modalAddRule" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="bi bi-funnel me-2 text-info"></i>Adicionar Regra</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tipo de Regra</label>
+            <select id="selRule" class="form-select form-select-sm bg-dark text-light border-secondary"></select>
+          </div>
+          <div id="ruleParamsArea" class="mb-2"></div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-info" id="btnSaveRule">
+            <i class="bi bi-check-lg me-1"></i>Salvar Regra
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js"></script>
+  <script src="/static/js/designer.js"></script>
+
+  <!-- Bootstrap config injected to JS -->
+  <script>
+    window.DSB_CONFIG = {
+      projectId: {{ project.id }},
+    pageId: { { current_page.id } },
+    canvasW: { { current_page.canvas_w or project.canvas_w } },
+    canvasH: { { current_page.canvas_h or project.canvas_h } },
+    canvasBg: "{{ current_page.canvas_bg or project.canvas_bg }}",
+      previewUrl: "/projetos/{{ project.id }}/preview/{{ current_page.id }}",
+        exportUrl: "/projetos/{{ project.id }}/exportar",
+          saveUrl: "/api/paginas/{{ current_page.id }}/salvar",
+            loadUrl: "/api/paginas/{{ current_page.id }}",
+              eventTypes: "/api/eventos/tipos",
+                eventActions: "/api/eventos/acoes",
+                  ruleTypes: "/api/regras/tipos",
+                    compCatalog: "/api/componentes/catalogo",
+                      renameUrl: "/projetos/{{ project.id }}/renomear",
+  };
+  </script>
+</body>
+
+</html>
