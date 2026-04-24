@@ -594,7 +594,6 @@ const DesignerCtrl = (() => {
 
   async function init() {
     cfg = window.DSB_CONFIG || {};
-
     // Carrega catálogos do servidor
     [catalog, eventCatalog, actionCatalog, ruleCatalog] = await Promise.all([
       fetch(cfg.compCatalog).then(r=>r.json()).then(arr => {
@@ -1429,7 +1428,7 @@ const KeyBindings = (() => {
         if (DesignerState.selectedId) { e.preventDefault(); DesignerCtrl.deleteSelected(); }
       }
       if (e.key === 'Escape') DesignerCtrl.deselect();
-      if (e.key === 'F5') { e.preventDefault(); window.open(window.DSB_CONFIG.previewUrl, '_blank'); }
+      if (e.key === 'F5') { e.preventDefault(); ResponsivePreview.open(); }
 
       // Nudge com setas
       const nudge = e.shiftKey ? 10 : 2;
@@ -1452,6 +1451,345 @@ const KeyBindings = (() => {
 
 
 /* ═══════════════════════════════════════════════════════════
+   TemplateGallery — galeria de templates prontos
+   ═══════════════════════════════════════════════════════════ */
+
+const TemplateGallery = (() => {
+  let _modal = null;
+
+  /** Inicializa eventos do botão e modal */
+  function init() {
+    document.getElementById('btnTemplates')?.addEventListener('click', open);
+  }
+
+  async function open() {
+    _modal = _modal || new bootstrap.Modal(document.getElementById('modalTemplates'));
+    _modal.show();
+    await _loadTemplates();
+  }
+
+  async function _loadTemplates() {
+    const grid = document.getElementById('templateGrid');
+    try {
+      const r   = await fetch(window.DSB_CONFIG.templatesUrl);
+      const d   = await r.json();
+      const tpls = d.templates || [];
+
+      // Agrupamento por categoria
+      const cats = {};
+      tpls.forEach(t => {
+        if (!cats[t.category]) cats[t.category] = [];
+        cats[t.category].push(t);
+      });
+
+      grid.innerHTML = Object.entries(cats).map(([cat, items]) => `
+        <div class="col-12"><h6 class="text-muted mb-2" style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;">${cat}</h6></div>
+        ${items.map(t => `
+          <div class="col-md-4">
+            <div class="card bg-dark border-secondary template-card h-100"
+                 data-id="${t.id}" style="cursor:pointer;transition:.15s;">
+              <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi ${t.icon} fs-4 text-warning"></i>
+                  <strong class="text-white" style="font-size:13px;">${t.name}</strong>
+                </div>
+                <p class="text-muted small mb-2">${t.description}</p>
+                <small class="text-muted">
+                  <i class="bi bi-grid-3x3-gap me-1"></i>${t.comp_count} componentes
+                </small>
+              </div>
+              <div class="card-footer border-secondary d-flex gap-2">
+                <button class="btn btn-sm btn-warning flex-fill btn-apply-tpl" data-id="${t.id}">
+                  <i class="bi bi-lightning me-1"></i>Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      `).join('');
+
+      // Hover effect
+      grid.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('mouseenter', () => card.style.borderColor = '#ffc107');
+        card.addEventListener('mouseleave', () => card.style.borderColor = '');
+      });
+
+      // Apply buttons
+      grid.querySelectorAll('.btn-apply-tpl').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id   = btn.dataset.id;
+          const keep = document.getElementById('chkKeepExisting')?.checked;
+          if (!keep && !confirm('Isso substituirá todos os componentes atuais. Continuar?')) return;
+
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Aplicando...';
+
+          const url = window.DSB_CONFIG.applyTplUrl.replace('{id}', id);
+          const r   = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keep_existing: keep }),
+          });
+          const d = await r.json();
+
+          if (d.ok) {
+            _modal.hide();
+            // Reload page data
+            const refreshed = await fetch(window.DSB_CONFIG.loadUrl).then(rx => rx.json());
+            DesignerState.load(refreshed);
+            // Apply canvas settings
+            document.getElementById('inputCanvasBg').value = d.canvas_bg;
+            document.getElementById('inputCanvasW').value  = d.canvas_w;
+            document.getElementById('inputCanvasH').value  = d.canvas_h;
+            CanvasManager.applyCanvasSettings(d.canvas_bg, d.canvas_w, d.canvas_h, true);
+            CanvasManager.renderAll();
+            OutlinePanel.render();
+            const st = document.getElementById('statusSave');
+            if (st) { st.textContent = `✓ Template "${id}" aplicado`; st.classList.add('save-flash'); }
+          } else {
+            alert('Erro ao aplicar template: ' + d.error);
+          }
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-lightning me-1"></i>Aplicar';
+        });
+      });
+    } catch (err) {
+      grid.innerHTML = `<div class="col-12 text-danger">Erro ao carregar templates: ${err.message}</div>`;
+    }
+  }
+
+  return { init, open };
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   ImageManager — upload e seleção de imagens
+   ═══════════════════════════════════════════════════════════ */
+
+const ImageManager = (() => {
+  let _modal       = null;
+  let _selectedUrl = null;
+  let _onSelect    = null;  // callback(url) quando usuário confirma
+
+  function init() {
+    const dropZone  = document.getElementById('uploadDropZone');
+    const fileInput = document.getElementById('fileInputUpload');
+
+    // Clique na drop zone → abre seletor
+    dropZone?.addEventListener('click', () => fileInput?.click());
+
+    // Drag & drop
+    dropZone?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.background = 'rgba(65,84,241,.15)';
+    });
+    dropZone?.addEventListener('dragleave', () => dropZone.style.background = '');
+    dropZone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.background = '';
+      _uploadFiles(e.dataTransfer.files);
+    });
+
+    // Mudança no input de arquivo
+    fileInput?.addEventListener('change', () => _uploadFiles(fileInput.files));
+
+    // Botão "Usar imagem"
+    document.getElementById('btnUseImage')?.addEventListener('click', () => {
+      if (_selectedUrl && _onSelect) {
+        _onSelect(_selectedUrl);
+        _modal?.hide();
+      }
+    });
+  }
+
+  /** Abre o modal de imagens; callback é chamado com a URL quando o usuário seleciona */
+  function open(onSelectCallback) {
+    _onSelect    = onSelectCallback || null;
+    _selectedUrl = null;
+    document.getElementById('btnUseImage').disabled = true;
+    document.getElementById('selectedImageUrl').textContent = '';
+    _modal = _modal || new bootstrap.Modal(document.getElementById('modalImageUpload'));
+    _modal.show();
+    _loadGallery();
+  }
+
+  async function _uploadFiles(files) {
+    if (!files || !files.length) return;
+    const prog   = document.getElementById('uploadProgress');
+    const status = document.getElementById('uploadStatus');
+    prog.style.display = '';
+    const bar = prog.querySelector('.progress-bar');
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      status.textContent = `Enviando ${file.name}...`;
+      bar.style.width = Math.round((i / files.length) * 80) + '%';
+
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const r = await fetch(window.DSB_CONFIG.uploadUrl, { method: 'POST', body: fd });
+        const d = await r.json();
+        if (!d.ok) { alert('Erro: ' + d.error); }
+      } catch (err) { alert('Erro no upload: ' + err.message); }
+    }
+
+    bar.style.width = '100%';
+    status.textContent = 'Concluído!';
+    setTimeout(() => { prog.style.display = 'none'; bar.style.width = '0%'; }, 1500);
+    await _loadGallery();
+    document.getElementById('fileInputUpload').value = '';
+  }
+
+  async function _loadGallery() {
+    const gallery = document.getElementById('imageGallery');
+    gallery.innerHTML = '<div class="col-12 text-center text-muted py-2"><span class="spinner-border spinner-border-sm"></span></div>';
+
+    try {
+      const r = await fetch(window.DSB_CONFIG.listUploadsUrl);
+      const d = await r.json();
+
+      if (!d.images || !d.images.length) {
+        gallery.innerHTML = '<div class="col-12 text-center text-muted py-3"><i class="bi bi-images fs-3 d-block mb-2"></i>Nenhuma imagem enviada ainda</div>';
+        return;
+      }
+
+      gallery.innerHTML = d.images.map(img => `
+        <div class="col-md-3 col-sm-4 col-6">
+          <div class="img-thumb-card border border-secondary rounded overflow-hidden"
+               data-url="${img.url}" style="cursor:pointer;aspect-ratio:1;position:relative;transition:.15s;">
+            <img src="${img.url}" style="width:100%;height:100%;object-fit:cover;"
+                 onerror="this.src='https://placehold.co/120x120/333/999?text=ERR'">
+            <div class="img-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.5);
+                 opacity:0;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <button class="btn btn-xs btn-light btn-use-img" data-url="${img.url}" title="Usar">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <button class="btn btn-xs btn-danger btn-del-img" data-filename="${img.filename}" title="Deletar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);
+                 padding:2px 5px;font-size:9px;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${img.filename} (${img.size_kb}KB)
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Hover effects
+      gallery.querySelectorAll('.img-thumb-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          card.style.borderColor = '#4154f1';
+          card.querySelector('.img-overlay').style.opacity = '1';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.borderColor = '';
+          card.querySelector('.img-overlay').style.opacity = '0';
+        });
+      });
+
+      // Use image
+      gallery.querySelectorAll('.btn-use-img').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          _selectedUrl = btn.dataset.url;
+          document.getElementById('selectedImageUrl').textContent = _selectedUrl;
+          document.getElementById('btnUseImage').disabled = false;
+          gallery.querySelectorAll('.img-thumb-card').forEach(c => c.style.outline = '');
+          btn.closest('.img-thumb-card').style.outline = '2px solid #4154f1';
+        });
+      });
+
+      // Delete image
+      gallery.querySelectorAll('.btn-del-img').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('Deletar esta imagem?')) return;
+          const r = await fetch(`/upload/imagem/${btn.dataset.filename}`, { method: 'DELETE' });
+          const d = await r.json();
+          if (d.ok) await _loadGallery();
+          else alert('Erro: ' + d.error);
+        });
+      });
+    } catch (err) {
+      gallery.innerHTML = `<div class="col-12 text-danger">Erro: ${err.message}</div>`;
+    }
+  }
+
+  return { init, open };
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   ResponsivePreview — preview com toggle de viewport
+   ═══════════════════════════════════════════════════════════ */
+
+const ResponsivePreview = (() => {
+  let _modal = null;
+
+  const VIEWPORTS = {
+    desktop: { w: '100%',  label: 'Desktop (1280px)' },
+    tablet:  { w: '768px', label: 'Tablet (768px)'   },
+    mobile:  { w: '375px', label: 'Mobile (375px)'   },
+  };
+
+  function init() {
+    // Override do botão de preview padrão
+    document.getElementById('btnPreview')?.addEventListener('click', (e) => {
+      e.stopImmediatePropagation();
+      open();
+    });
+
+    // Viewport toggle buttons
+    document.getElementById('viewportToggle')?.querySelectorAll('[data-vp]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#viewportToggle [data-vp]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const vp = VIEWPORTS[btn.dataset.vp];
+        const frame = document.getElementById('previewFrame');
+        if (frame) {
+          frame.style.width = vp.w;
+          frame.style.minHeight = '80vh';
+        }
+        const lbl = document.getElementById('vpLabel');
+        if (lbl) lbl.textContent = vp.label;
+      });
+    });
+  }
+
+  function open() {
+    _modal = _modal || new bootstrap.Modal(document.getElementById('modalResponsivePreview'));
+
+    // Build preview inline (saves then renders)
+    const frame = document.getElementById('previewFrame');
+    frame.style.width     = '100%';
+    frame.style.minHeight = '80vh';
+    frame.innerHTML       = '<div style="padding:40px;text-align:center;color:#666;"><span class="spinner-border"></span><br>Carregando preview...</div>';
+
+    _modal.show();
+
+    // After save, load preview in iframe
+    DesignerCtrl.save(true).then(() => {
+      const iframe = document.createElement('iframe');
+      iframe.src    = window.DSB_CONFIG.previewUrl;
+      iframe.style.cssText = 'width:100%;height:80vh;border:none;display:block;';
+      frame.innerHTML = '';
+      frame.appendChild(iframe);
+    });
+  }
+
+  return { init, open };
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
    BOOT
    ═══════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => DesignerCtrl.init());
+document.addEventListener('DOMContentLoaded', () => {
+  DesignerCtrl.init().then(() => {
+    TemplateGallery.init();
+    ImageManager.init();
+    ResponsivePreview.init();
+  });
+});

@@ -191,8 +191,8 @@ class NumberBoxComponent(BaseComponent):
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
-        mn  = f'min="{props["min"]}"'  if props.get("min")  != "" else ""
-        mx  = f'max="{props["max"]}"'  if props.get("max")  != "" else ""
+        mn  = f'min="{props["min"]}"'  if props.get("min",  "") != "" else ""
+        mx  = f'max="{props["max"]}"'  if props.get("max",  "") != "" else ""
         return (
             f'<div style="{pos}">'
             f'<input id="{comp_id}" type="number" class="form-control" '

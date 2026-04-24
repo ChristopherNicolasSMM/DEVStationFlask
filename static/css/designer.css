@@ -295,3 +295,26 @@ html, body.designer-body { height:100%; overflow:hidden; background: var(--bg-da
   100% { color: var(--text-dim); }
 }
 .save-flash { animation: flash-save 1.5s ease forwards; }
+
+/* ══ IMAGE UPLOAD DROP ZONE ══════════════════════════════ */
+.border-dashed {
+  border-style: dashed !important;
+}
+#uploadDropZone:hover {
+  background: rgba(65,84,241,.08) !important;
+}
+
+/* ══ TEMPLATE CARDS HOVER ════════════════════════════════ */
+.template-card:hover {
+  background: #2d3250 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+
+/* ══ VIEWPORT PREVIEW FRAME ══════════════════════════════ */
+#previewFrame {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+  margin: 20px auto;
+}

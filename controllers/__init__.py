@@ -21,6 +21,8 @@ def register_blueprints(app: Flask) -> None:
     from .rule_controller      import bp as rule_bp
     from .export_controller    import bp as export_bp
     from .menu_controller      import bp as menu_bp
+    from .upload_controller    import bp as upload_bp
+    from .template_controller  import bp as template_bp
 
     app.register_blueprint(project_bp)
     app.register_blueprint(page_bp)
@@ -29,3 +31,5 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(rule_bp)
     app.register_blueprint(export_bp)
     app.register_blueprint(menu_bp)
+    app.register_blueprint(upload_bp)
+    app.register_blueprint(template_bp)

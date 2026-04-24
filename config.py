@@ -20,7 +20,7 @@ class Config:
     # ── Banco de Dados ────────────────────────────────────────────
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-        f"sqlite:///{os.path.join(BASE_DIR, 'instance/devstation.db')}"
+        f"sqlite:///{os.path.join(BASE_DIR, 'devstation.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
