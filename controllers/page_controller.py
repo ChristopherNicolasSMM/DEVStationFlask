@@ -97,7 +97,61 @@ def rename_page(pgid: int):
     return jsonify(page.to_dict())
 
 
-@bp.route("/paginas/<int:pgid>/deletar", methods=["POST"])
+@bp.route("/paginas/<int:pgid>/duplicar", methods=["POST"])
+def duplicate_page(pgid: int):
+    """
+    Duplica uma página (e todos seus componentes) dentro do mesmo projeto.
+    O nome da cópia é 'Cópia de <nome original>'.
+    Retorna os dados da nova página.
+    """
+    import copy
+    source_page = Page.query.get_or_404(pgid)
+    project     = source_page.project
+
+    # Próxima ordem
+    next_order = max((p.order for p in project.pages), default=-1) + 1
+    new_name   = f"Cópia de {source_page.name}"
+
+    new_page = Page(
+        project_id = project.id,
+        name       = new_name,
+        title      = new_name,
+        slug       = _slugify(new_name),
+        is_home    = False,
+        order      = next_order,
+        canvas_w   = source_page.canvas_w,
+        canvas_h   = source_page.canvas_h,
+        canvas_bg  = source_page.canvas_bg,
+    )
+    db.session.add(new_page)
+    db.session.flush()  # obtém new_page.id
+
+    # Clona todos os componentes
+    for comp in source_page.components:
+        new_comp = Component(
+            page_id    = new_page.id,
+            type       = comp.type,
+            name       = comp.name,
+            x          = comp.x,
+            y          = comp.y,
+            width      = comp.width,
+            height     = comp.height,
+            z_index    = comp.z_index,
+            properties = copy.deepcopy(comp.properties or {}),
+            events     = copy.deepcopy(comp.events or {}),
+            rules      = copy.deepcopy(comp.rules or []),
+        )
+        db.session.add(new_comp)
+
+    db.session.commit()
+    return jsonify({
+        "ok":           True,
+        "page":         new_page.to_dict(),
+        "comp_cloned":  len(source_page.components),
+        "redirect_url": f"/designer/{project.id}/{new_page.id}",
+    })
+
+
 def delete_page(pgid: int):
     page = Page.query.get_or_404(pgid)
     if page.is_home:

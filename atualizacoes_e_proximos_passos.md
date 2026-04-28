@@ -290,3 +290,108 @@ O projeto já inclui em `static/assets/vendor/`:
 ---
 
 *Documento gerado automaticamente pelo DevStation Builder CI — v2.1 MVC*
+
+---
+
+### v2.2 — Sprint 3: Multi-seleção, Layers Panel, Duplicate Page
+**Entregável:** `devstation_builder_v2.2_sprint3.zip`
+
+#### 🆕 Novas Funcionalidades
+
+**1. Multi-Seleção no Canvas** (`MultiSelect` — designer.js)
+
+| Gesto | Ação |
+|-------|------|
+| `Shift + Click` em componente | Adiciona/remove da seleção múltipla |
+| Arrastar no vazio do canvas | Rubber-band (seleciona por área) |
+| `Ctrl + A` | Seleciona todos |
+| `Esc` | Limpa seleção múltipla |
+| `Ctrl + D` (com seleção) | Duplica todos selecionados |
+| `Delete` (com seleção) | Remove todos selecionados |
+| `Setas` (com seleção) | Move grupo 2px / Shift+Setas 10px |
+
+**Selection Badge** (barra flutuante): aparece automaticamente ao selecionar 2+ componentes com botões de:
+- Duplicar grupo
+- Alinhar esquerda / centro / direita (relativo ao canvas)
+- Alinhar ao grupo (center, edges)
+- Distribuição equidistante horizontal e vertical
+- Deletar grupo
+- Limpar seleção
+
+**2. Layers Panel** (aba ⠿ no painel esquerdo)
+- Lista de camadas ordenada por z-index (topo → fundo)
+- **Drag & drop para reordenar z-index** dentro do painel
+- **Toggle visibilidade** 👁️ — oculta temporariamente no canvas (não persiste)
+- **Toggle lock** 🔒 — bloqueia drag/resize no canvas, destaca com borda laranja
+- **Rename inline** — duplo clique no nome da camada
+- **Highlight** — mostra seleção simples (azul) e múltipla (laranja)
+- **Delete** via botão ✕ em cada linha
+
+**3. Duplicate Page** (botão ⧉ na aba Páginas)
+- Clona a página atual com todos os componentes
+- Endpoint: `POST /paginas/<pgid>/duplicar`
+- Nome automático: `"Cópia de <nome original>"`
+- Redireciona automaticamente para a nova página após duplicação
+- Usa `copy.deepcopy` para isolar propriedades/eventos/regras
+
+#### 📁 Arquivos Modificados
+- `views/designer.html` — nova aba tab-layers, rubber-band div, selection-badge, btnDupPage
+- `static/js/designer.js` — +700 linhas: módulos MultiSelect, LayersPanel, PageManager
+- `static/css/designer.css` — +130 linhas: rubber-band, multi-selected, layers-list, selection-badge
+- `controllers/page_controller.py` — endpoint `POST /paginas/<pgid>/duplicar`
+
+---
+
+## 🗺️ Roadmap Atualizado
+
+### Sprint 4 — Dados e Código (próxima)
+
+#### 1. DataGrid com Fonte de API
+- Propriedade `dataSource` (URL) no componente DataGrid
+- Carregamento dinâmico com `fetch` ao preview/export
+- Configuração: método HTTP, headers, mapeamento de campos JSON → colunas
+- Atualização automática via componente Timer
+- UI no painel de propriedades: campo URL + botão "Testar"
+
+#### 2. Modal "Ver Código Gerado"
+- Botão na toolbar: `</>` Código
+- Modal com 3 abas: **HTML** · **CSS** · **JavaScript**
+- Syntax highlight com `highlight.js` (CDN)
+- Botão "Copiar" por aba
+- Atualização em tempo real ao editar o canvas
+
+#### 3. Snap to Components (guias inteligentes)
+- Linhas guia azuis durante drag (alinha com edges e centros de outros comps)
+- Lock aspect ratio durante resize (`Shift` mantido)
+- Snap configurável: ativar/desativar no toolbar
+
+### Sprint 5 — Componentes Avançados
+
+#### 4. RichTextEditor
+- Componente usando TinyMCE (já nos vendors locais!)
+- Edição inline no canvas
+- Export HTML com conteúdo serializado
+
+#### 5. ApexChart Avançado
+- Componente usando ApexCharts (já nos vendors locais!)
+- Mais tipos: área, radial, heatmap, treemap
+- Configuração visual no painel de propriedades
+
+#### 6. MaskedInput
+- Componente de entrada com máscara
+- Máscaras padrão: CPF, CNPJ, Telefone, CEP, Data
+- Validação integrada com sistema de regras
+
+### Sprint 6 — Plataforma
+
+#### 7. Integração DS_DESIGNER
+- Registrar como `DS_DESIGNER` na DevStationPlatform
+- Associar projetos a plugins `NDS_*`
+- Auditoria via `DS_AUDIT`
+- Perfil mínimo: `DEVELOPER`
+
+#### 8. Sistema de Versões
+- Snapshot automático a cada save (últimas 10 versões)
+- Histórico visual com diff de componentes
+- Rollback com 1 clique
+

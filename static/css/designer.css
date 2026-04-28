@@ -318,3 +318,187 @@ html, body.designer-body { height:100%; overflow:hidden; background: var(--bg-da
   box-shadow: 0 8px 40px rgba(0,0,0,.5);
   margin: 20px auto;
 }
+
+/* ══════════════════════════════════════════════════════════
+   SPRINT 3 — Multi-Select, Layers Panel, Duplicate Page
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Multi-select: rubber-band ─────────────────────────── */
+.rubber-band {
+  position: absolute;
+  border: 2px dashed var(--accent);
+  background: rgba(65,84,241,.08);
+  pointer-events: none;
+  z-index: 9000;
+  border-radius: 2px;
+}
+
+/* ── Multi-select: highlight ring for selected group ─────── */
+.canvas-comp.multi-selected {
+  outline: 2px solid #ff9800 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px rgba(255,152,0,.18) !important;
+}
+
+/* ── Selection badge (bottom of canvas) ──────────────────── */
+.selection-badge {
+  position: fixed;
+  bottom: 52px;
+  left: calc(var(--left-w) + 16px);
+  background: rgba(26,29,46,.92);
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(6px);
+}
+.selection-badge .sb-count {
+  font-weight: 700;
+  color: #ff9800;
+}
+.selection-badge .sb-actions {
+  display: flex;
+  gap: 4px;
+}
+.selection-badge .sb-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-light);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background .1s;
+}
+.selection-badge .sb-btn:hover { background: var(--accent); border-color: var(--accent); }
+.selection-badge .sb-btn.danger:hover { background: #dc3545; border-color: #dc3545; }
+
+/* ── Multi-select info bar (in Layers panel) ──────────────── */
+.multi-select-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(255,152,0,.12);
+  border-bottom: 1px solid rgba(255,152,0,.3);
+  font-size: 11px;
+  color: #ff9800;
+}
+
+/* ── Layers Panel ─────────────────────────────────────────── */
+.layers-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: var(--text-light);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background .1s;
+  user-select: none;
+  position: relative;
+}
+.layer-item:hover { background: var(--bg-panel2); }
+.layer-item.selected-layer {
+  border-left-color: var(--accent);
+  background: rgba(65,84,241,.15);
+  color: #fff;
+}
+.layer-item.multi-layer {
+  border-left-color: #ff9800;
+  background: rgba(255,152,0,.1);
+}
+.layer-item.locked-layer { opacity: .5; }
+.layer-item.hidden-layer { opacity: .4; }
+
+/* Drag handle for reorder */
+.layer-drag-handle {
+  color: var(--text-dim);
+  cursor: grab;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity .1s;
+}
+.layer-item:hover .layer-drag-handle { opacity: 1; }
+
+/* Layer type icon */
+.layer-icon {
+  color: var(--accent);
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Layer name */
+.layer-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+}
+.layer-name-input {
+  flex: 1;
+  background: var(--bg-panel2);
+  border: 1px solid var(--accent);
+  color: #fff;
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  outline: none;
+}
+
+/* Layer action buttons (visibility + lock) */
+.layer-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity .1s;
+}
+.layer-item:hover .layer-actions { opacity: 1; }
+.layer-item.selected-layer .layer-actions { opacity: 1; }
+
+.layer-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-size: 11px;
+  transition: color .1s, background .1s;
+  line-height: 1.4;
+}
+.layer-btn:hover { color: #fff; background: var(--bg-panel2); }
+.layer-btn.active-vis { color: #fff; }
+.layer-btn.active-lock { color: #ff9800; }
+
+/* Divider between layers */
+.layer-item.dragging-over-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* ── Duplicate page button ────────────────────────────────── */
+.btn-xs {
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+

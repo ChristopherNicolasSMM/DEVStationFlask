@@ -107,6 +107,7 @@
     <div class="panel-tabs">
       <button class="ptab active" data-tab="tab-palette" title="Componentes"><i class="bi bi-grid-3x3-gap"></i></button>
       <button class="ptab" data-tab="tab-pages"   title="Páginas"><i class="bi bi-files"></i></button>
+      <button class="ptab" data-tab="tab-layers"  title="Layers"><i class="bi bi-stack"></i></button>
       <button class="ptab" data-tab="tab-outline" title="Outline"><i class="bi bi-list-nested"></i></button>
     </div>
 
@@ -138,9 +139,14 @@
     <div id="tab-pages" class="panel-tab-content">
       <div class="px-2 py-2 border-bottom d-flex justify-content-between align-items-center">
         <small class="fw-semibold text-muted">PÁGINAS</small>
-        <button class="btn btn-xs btn-outline-primary" id="btnNewPage" title="Nova Página">
-          <i class="bi bi-plus"></i>
-        </button>
+        <div class="d-flex gap-1">
+          <button class="btn btn-xs btn-outline-secondary" id="btnDupPage" title="Duplicar Página">
+            <i class="bi bi-copy"></i>
+          </button>
+          <button class="btn btn-xs btn-outline-primary" id="btnNewPage" title="Nova Página">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
       </div>
       <div id="pagesList">
         {% for pg in all_pages %}
@@ -157,6 +163,33 @@
         </div>
         {% endfor %}
       </div>
+    </div>
+
+    <!-- Tab: Layers Panel -->
+    <div id="tab-layers" class="panel-tab-content">
+      <div class="px-2 py-2 border-bottom d-flex justify-content-between align-items-center">
+        <small class="fw-semibold text-muted">CAMADAS</small>
+        <div class="d-flex gap-1">
+          <button class="btn btn-xs btn-outline-secondary" id="btnLayersSelAll" title="Selecionar todos">
+            <i class="bi bi-check2-all"></i>
+          </button>
+          <button class="btn btn-xs btn-outline-danger" id="btnLayersDelSel" title="Deletar selecionados" style="display:none;">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Multi-select info bar -->
+      <div id="multiSelectBar" class="multi-select-bar" style="display:none;">
+        <span id="multiSelectCount" class="fw-semibold"></span>
+        <div class="d-flex gap-1 ms-auto">
+          <button class="btn btn-xs btn-outline-light" id="btnMultiDup"  title="Duplicar seleção"><i class="bi bi-copy"></i></button>
+          <button class="btn btn-xs btn-outline-light" id="btnMultiAlignL" title="Alinhar esquerda"><i class="bi bi-align-start"></i></button>
+          <button class="btn btn-xs btn-outline-light" id="btnMultiAlignC" title="Centralizar"><i class="bi bi-align-center"></i></button>
+          <button class="btn btn-xs btn-outline-light" id="btnMultiAlignR" title="Alinhar direita"><i class="bi bi-align-end"></i></button>
+          <button class="btn btn-xs btn-outline-danger" id="btnMultiDel" title="Deletar seleção"><i class="bi bi-trash"></i></button>
+        </div>
+      </div>
+      <div id="layersList" class="layers-list"></div>
     </div>
 
     <!-- Tab: Outline (árvore de componentes) -->
@@ -180,8 +213,12 @@
           <i class="bi bi-cursor-fill d-block mb-2"></i>
           Arraste componentes da paleta para cá
         </div>
+        <!-- Rubber-band selection overlay -->
+        <div id="rubberBand" class="rubber-band" style="display:none;"></div>
       </div>
     </div>
+    <!-- Selection info badge -->
+    <div id="selectionBadge" class="selection-badge" style="display:none;"></div>
   </main>
 
   <!-- ── RIGHT PANEL ─────────────────────────────────────── -->
