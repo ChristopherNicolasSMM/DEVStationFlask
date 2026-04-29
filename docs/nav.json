@@ -1,0 +1,407 @@
+{
+  "_meta": {
+    "versao": "2.2",
+    "gerado_em": "2026-04",
+    "projeto": "DevStation Builder",
+    "repositorio": "https://github.com/ChristopherNicolasSMM/DEVStationFlask",
+    "descricao": "Metadados de navegacao da documentacao para uso em pagina de ajuda futura",
+    "uso": "Iterar sobre 'documentos' para montar menu lateral. Usar 'tags' e 'areas' para buscas. 'fluxos' contem referencias cruzadas entre documentos."
+  },
+
+  "documentos": [
+    {
+      "id": "readme",
+      "arquivo": "README.md",
+      "titulo": "Índice da Documentação",
+      "descricao": "Página central com índice navegável, quick start e mapa temático",
+      "ordem": 0,
+      "nivel": 0,
+      "icone": "bi-house",
+      "tema": "navegacao",
+      "areas": ["geral", "navegacao"],
+      "tags": ["indice", "inicio", "quick-start", "navegacao"],
+      "contem": ["tabela de documentos", "quick start", "links por tema", "estado do sistema"],
+      "diagramas": [],
+      "relevancia": "alta"
+    },
+    {
+      "id": "visao_geral",
+      "arquivo": "01_visao_geral.md",
+      "titulo": "Visão Geral do Produto",
+      "descricao": "Propósito, personas, diferenciais estratégicos e fluxo principal de valor",
+      "ordem": 1,
+      "nivel": 1,
+      "icone": "bi-eye",
+      "tema": "produto",
+      "areas": ["produto", "negocio", "usuarios"],
+      "tags": ["visao", "personas", "diferenciais", "escopo", "c4-context", "stakeholders"],
+      "contem": ["C4 Context diagram", "personas", "tabela de diferenciais", "fluxo de valor", "escopo do sistema"],
+      "diagramas": ["C4Context", "stateDiagram"],
+      "proximos": ["02_arquitetura.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "arquitetura",
+      "arquivo": "02_arquitetura.md",
+      "titulo": "Arquitetura do Sistema",
+      "descricao": "Stack técnica, C4 Container, C4 Component, estrutura MVC de diretórios",
+      "ordem": 2,
+      "nivel": 1,
+      "icone": "bi-diagram-3",
+      "tema": "arquitetura",
+      "areas": ["arquitetura", "backend", "estrutura"],
+      "tags": ["c4-container", "c4-component", "mvc", "flask", "blueprint", "sqlalchemy", "stack", "diretorios"],
+      "contem": ["C4 Container", "C4 Component", "tabela de stack", "estrutura de diretórios", "Application Factory", "fluxo de requisição MVC"],
+      "diagramas": ["C4Container", "C4Component", "sequenceDiagram"],
+      "proximos": ["03_modelos_dados.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "modelos_dados",
+      "arquivo": "03_modelos_dados.md",
+      "titulo": "Modelos de Dados",
+      "descricao": "Diagrama ER, class diagram dos models Python, decisões de design do banco",
+      "ordem": 3,
+      "nivel": 1,
+      "icone": "bi-database",
+      "tema": "dados",
+      "areas": ["banco", "modelos", "sqlalchemy"],
+      "tags": ["er-diagram", "class-diagram", "project", "page", "component", "menu", "json", "sqlite", "foreignkey"],
+      "contem": ["erDiagram completo", "classDiagram models Python", "classDiagram ComponentSystem", "detalhes de cada campo", "exemplos de JSON", "decisões de design"],
+      "diagramas": ["erDiagram", "classDiagram"],
+      "entidades": ["Project", "Page", "Component", "Menu"],
+      "proximos": ["04_componentes_visuais.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "componentes_visuais",
+      "arquivo": "04_componentes_visuais.md",
+      "titulo": "Componentes Visuais",
+      "descricao": "Catálogo completo dos 36 componentes com propriedades, eventos e regras",
+      "ordem": 4,
+      "nivel": 1,
+      "icone": "bi-grid-3x3-gap",
+      "tema": "componentes",
+      "areas": ["componentes", "ui", "frontend"],
+      "tags": [
+        "catalogo", "36-componentes", "base-component", "entrada", "visualizacao",
+        "container", "dados", "feedback", "navegacao", "tempo",
+        "button", "textbox", "datagrid", "progressbar", "timer", "countdown",
+        "tabs", "card", "chart", "modal", "navbar", "stepper"
+      ],
+      "contem": ["classDiagram hierarquia", "tabela por grupo", "props de cada componente", "eventos por tipo", "regras aplicáveis"],
+      "diagramas": ["classDiagram"],
+      "grupos": ["Entrada", "Visualização", "Container", "Dados", "Feedback", "Navegação", "Tempo"],
+      "proximos": ["05_sistema_eventos.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "sistema_eventos",
+      "arquivo": "05_sistema_eventos.md",
+      "titulo": "Sistema de Eventos",
+      "descricao": "Tipos de eventos, ações pré-definidas, DSB runtime API, sequence diagrams",
+      "ordem": 5,
+      "nivel": 1,
+      "icone": "bi-lightning-charge",
+      "tema": "eventos",
+      "areas": ["eventos", "javascript", "runtime", "frontend"],
+      "tags": [
+        "onclick", "onchange", "ontick", "oncomplete", "onrowclick",
+        "dsb-runtime", "toast", "setvalue", "settimer", "validateall",
+        "acoes", "sequence-diagram", "event-catalog", "action-catalog"
+      ],
+      "contem": ["stateDiagram fluxo de evento", "tabela categorias", "tabela ações por grupo", "DSB API completa", "sequence adição de evento", "sequence execução no export", "classDiagram sistema eventos"],
+      "diagramas": ["stateDiagram", "sequenceDiagram", "classDiagram"],
+      "api_dsb": ["toast", "val", "setValue", "setText", "setVisible", "setEnabled", "setProgress", "startTimer", "stopTimer", "startCountdown", "validateAll", "callApi", "exportCsv"],
+      "proximos": ["06_sistema_regras.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "sistema_regras",
+      "arquivo": "06_sistema_regras.md",
+      "titulo": "Sistema de Regras de Negócio",
+      "descricao": "Tipos de regras: validação, visibilidade e cálculo, com exemplos JSON e sequence diagrams",
+      "ordem": 6,
+      "nivel": 1,
+      "icone": "bi-funnel",
+      "tema": "regras",
+      "areas": ["regras", "validacao", "negocio", "frontend"],
+      "tags": [
+        "obrigatorio", "email", "cpf", "cnpj", "min-length", "max-length",
+        "visivel-se", "oculto-se", "habilitado-se", "calcular", "somar",
+        "progresso", "status-map", "formatar", "operadores", "dicionario-json"
+      ],
+      "contem": ["stateDiagram", "classDiagram validacao", "tabela por grupo", "operadores disponíveis", "exemplos JSON", "sequence execução", "como adicionar nova regra"],
+      "diagramas": ["stateDiagram", "classDiagram", "sequenceDiagram"],
+      "grupos_regras": ["Validação", "Visibilidade", "Cálculo"],
+      "proximos": ["07_api_endpoints.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "api_endpoints",
+      "arquivo": "07_api_endpoints.md",
+      "titulo": "API & Endpoints HTTP",
+      "descricao": "Referência completa de todas as rotas HTTP com request/response",
+      "ordem": 7,
+      "nivel": 1,
+      "icone": "bi-code-slash",
+      "tema": "api",
+      "areas": ["api", "backend", "rest", "endpoints"],
+      "tags": [
+        "rotas", "endpoints", "http", "get", "post", "delete",
+        "projeto", "pagina", "componente", "upload", "template", "export",
+        "json-request", "json-response", "status-codes"
+      ],
+      "contem": ["mapa de rotas (graph)", "referência de todos os endpoints", "body/response de cada rota", "estratégia upsert", "estrutura ZIP export", "códigos de status"],
+      "diagramas": ["graph"],
+      "rotas_principais": [
+        "GET /", "POST /projetos/novo", "GET /designer/<pid>/<pgid>",
+        "GET|POST /api/paginas/<pgid>", "GET /projetos/<pid>/exportar",
+        "POST /upload/imagem", "GET /api/templates", "GET /api/componentes/catalogo"
+      ],
+      "proximos": ["08_frontend_designer.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "frontend_designer",
+      "arquivo": "08_frontend_designer.md",
+      "titulo": "Frontend — Designer Engine",
+      "descricao": "Arquitetura JS MVC frontend, 16 módulos, state/class diagrams, atalhos",
+      "ordem": 8,
+      "nivel": 1,
+      "icone": "bi-display",
+      "tema": "frontend",
+      "areas": ["javascript", "frontend", "canvas", "designer"],
+      "tags": [
+        "designer-state", "canvas-manager", "designer-ctrl",
+        "multi-select", "layers-panel", "props-panel", "events-panel",
+        "rules-panel", "outline-panel", "pages-panel",
+        "template-gallery", "image-manager", "responsive-preview",
+        "palette-drag", "canvas-drop", "context-menu", "key-bindings",
+        "interact-js", "undo-redo", "class-diagram", "state-diagram"
+      ],
+      "contem": ["graph arquitetura MVC frontend", "classDiagram módulos", "stateDiagram ciclo componente", "stateDiagram zoom", "sequence inicialização", "sequence drag & drop", "tabela atalhos"],
+      "diagramas": ["graph", "classDiagram", "stateDiagram", "sequenceDiagram"],
+      "modulos_js": [
+        "DesignerState", "CanvasManager", "DesignerCtrl",
+        "PropsPanel", "EventsPanel", "RulesPanel", "LayersPanel",
+        "OutlinePanel", "PagesPanel", "MenuBar", "KeyBindings",
+        "MultiSelect", "PageManager", "TemplateGallery", "ImageManager", "ResponsivePreview"
+      ],
+      "proximos": ["09_fluxos_usuario.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "fluxos_usuario",
+      "arquivo": "09_fluxos_usuario.md",
+      "titulo": "Fluxos de Uso",
+      "descricao": "7 sequence diagrams dos principais fluxos de uso end-to-end",
+      "ordem": 9,
+      "nivel": 1,
+      "icone": "bi-arrow-right-circle",
+      "tema": "fluxos",
+      "areas": ["ux", "fluxos", "sequencias"],
+      "tags": [
+        "criar-projeto", "aplicar-template", "adicionar-regra",
+        "multi-selecao", "alinhamento", "preview", "export",
+        "layers-panel", "reordenar", "duplicar-pagina",
+        "sequence-diagram", "end-to-end"
+      ],
+      "contem": [
+        "Fluxo 1: Criar projeto", "Fluxo 2: Aplicar template",
+        "Fluxo 3: Adicionar regra de validação", "Fluxo 4: Multi-seleção e alinhamento",
+        "Fluxo 5: Preview responsivo e export", "Fluxo 6: Layers Panel reordenar",
+        "Fluxo 7: Duplicar página"
+      ],
+      "diagramas": ["sequenceDiagram"],
+      "fluxos": [
+        "criar_projeto", "aplicar_template", "adicionar_regra",
+        "multi_selecao", "preview_export", "layers_reorder", "duplicate_page"
+      ],
+      "proximos": ["10_export_preview.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "export_preview",
+      "arquivo": "10_export_preview.md",
+      "titulo": "Export & Preview — Pipeline de Geração",
+      "descricao": "Pipeline completo de geração HTML/CSS/JS, estrutura do ZIP, CSS responsivo",
+      "ordem": 10,
+      "nivel": 1,
+      "icone": "bi-download",
+      "tema": "export",
+      "areas": ["export", "geracao-codigo", "html", "css", "javascript"],
+      "tags": [
+        "html-generator", "css-generator", "js-generator", "component-registry",
+        "inline-css", "inline-js", "zip-export", "dsb-runtime",
+        "bootstrap-responsive", "media-query", "pipeline", "class-diagram"
+      ],
+      "contem": ["graph pipeline", "classDiagram generators", "sequence preview", "sequence export ZIP", "estrutura ZIP", "HTML exportado anotado", "CSS responsivo gerado", "stateDiagram modos export"],
+      "diagramas": ["graph", "classDiagram", "sequenceDiagram", "stateDiagram"],
+      "proximos": ["11_templates.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "templates",
+      "arquivo": "11_templates.md",
+      "titulo": "Galeria de Templates",
+      "descricao": "5 templates prontos com detalhamento de componentes, eventos e regras",
+      "ordem": 11,
+      "nivel": 1,
+      "icone": "bi-grid-1x2",
+      "tema": "templates",
+      "areas": ["templates", "produtividade", "componentes"],
+      "tags": [
+        "login-form", "dashboard-kpi", "crm-form", "landing-page", "relatorio-status",
+        "template-catalog", "aplicar-template", "keep-existing",
+        "sequence-diagram", "er-diagram"
+      ],
+      "contem": ["stateDiagram fluxo template", "5 templates detalhados", "sequence aplicação", "ER template vs componente", "como adicionar novo template"],
+      "diagramas": ["stateDiagram", "sequenceDiagram", "erDiagram"],
+      "templates_disponiveis": [
+        {"id": "login_form",       "categoria": "Formulário",  "comps": 7},
+        {"id": "dashboard_kpi",    "categoria": "Dashboard",   "comps": 10},
+        {"id": "crm_form",         "categoria": "Formulário",  "comps": 19},
+        {"id": "landing_page",     "categoria": "Marketing",   "comps": 11},
+        {"id": "relatorio_status", "categoria": "Relatório",   "comps": 15}
+      ],
+      "proximos": ["12_guia_desenvolvimento.md"],
+      "relevancia": "media"
+    },
+    {
+      "id": "guia_desenvolvimento",
+      "arquivo": "12_guia_desenvolvimento.md",
+      "titulo": "Guia de Desenvolvimento",
+      "descricao": "Como adicionar componentes, controllers, regras, ações e templates",
+      "ordem": 12,
+      "nivel": 1,
+      "icone": "bi-wrench-adjustable",
+      "tema": "desenvolvimento",
+      "areas": ["desenvolvimento", "extensibilidade", "padroes"],
+      "tags": [
+        "novo-componente", "novo-controller", "nova-regra", "nova-acao",
+        "novo-template", "base-component", "blueprint", "nomenclatura",
+        "checklist", "open-closed", "mvc", "testes", "ambiente-dev"
+      ],
+      "contem": ["princípios de design", "passo a passo novo componente", "passo a passo novo controller", "nova regra + JS", "nova ação", "novo template", "configuração ambiente", "teste manual", "sequence adição componente", "tabela nomenclatura"],
+      "diagramas": ["sequenceDiagram"],
+      "proximos": ["13_sprint_history.md"],
+      "relevancia": "alta"
+    },
+    {
+      "id": "sprint_history",
+      "arquivo": "13_sprint_history.md",
+      "titulo": "Histórico de Versões",
+      "descricao": "Changelog detalhado por sprint: v1.0, v2.0, v2.1, v2.2 com métricas",
+      "ordem": 13,
+      "nivel": 1,
+      "icone": "bi-clock-history",
+      "tema": "historico",
+      "areas": ["changelog", "versoes", "metricas"],
+      "tags": [
+        "v1.0", "v2.0", "v2.1", "v2.2",
+        "sprint-1", "sprint-2", "sprint-3",
+        "bugs-corrigidos", "funcionalidades", "metricas-por-sprint",
+        "timeline"
+      ],
+      "contem": ["timeline Mermaid", "changelog v1.0", "changelog v2.0", "changelog v2.1", "changelog v2.2", "tabela de métricas por sprint"],
+      "diagramas": ["timeline"],
+      "versoes": ["v1.0", "v2.0", "v2.1", "v2.2"],
+      "proximos": ["14_roadmap.md"],
+      "relevancia": "media"
+    },
+    {
+      "id": "roadmap",
+      "arquivo": "14_roadmap.md",
+      "titulo": "Roadmap & Backlog",
+      "descricao": "Gantt chart, sprints 4–8 detalhadas, backlog completo por épico",
+      "ordem": 14,
+      "nivel": 1,
+      "icone": "bi-map",
+      "tema": "planejamento",
+      "areas": ["roadmap", "backlog", "planejamento", "sprint"],
+      "tags": [
+        "gantt", "sprint-4", "sprint-5", "sprint-6", "sprint-7", "sprint-8",
+        "backlog", "epicos", "dataGrid-api", "ver-codigo", "snap-components",
+        "tinymce", "apexcharts", "autenticacao", "postgresql", "docker",
+        "rbac", "ds-designer", "versoes-pagina"
+      ],
+      "contem": ["Gantt roadmap", "Sprint 4 detalhada (3 itens)", "Sprint 5 (5 itens)", "Sprint 6 (4 itens)", "Sprint 7 (4 itens)", "Sprint 8 (3 itens)", "backlog por 8 épicos"],
+      "diagramas": ["gantt", "sequenceDiagram", "stateDiagram", "erDiagram", "graph"],
+      "epicos": [
+        "Canvas & UX", "Componentes", "Dados & Integrações",
+        "Geração & Export", "Projetos & Páginas", "Plataforma DS_",
+        "Usuários & Segurança", "Infraestrutura & DevOps"
+      ],
+      "proximos": ["README.md"],
+      "relevancia": "alta"
+    }
+  ],
+
+  "fluxos_cruzados": [
+    {
+      "id": "fluxo_criar_componente",
+      "nome": "Criar e usar novo componente",
+      "documentos": ["12_guia_desenvolvimento.md", "04_componentes_visuais.md", "08_frontend_designer.md", "10_export_preview.md"]
+    },
+    {
+      "id": "fluxo_exportar_projeto",
+      "nome": "Exportar projeto completo",
+      "documentos": ["09_fluxos_usuario.md", "10_export_preview.md", "07_api_endpoints.md"]
+    },
+    {
+      "id": "fluxo_eventos_regras",
+      "nome": "Configurar evento e regra",
+      "documentos": ["05_sistema_eventos.md", "06_sistema_regras.md", "09_fluxos_usuario.md"]
+    },
+    {
+      "id": "fluxo_arquitetura_dados",
+      "nome": "Entender arquitetura e dados",
+      "documentos": ["02_arquitetura.md", "03_modelos_dados.md", "07_api_endpoints.md"]
+    },
+    {
+      "id": "fluxo_sprint_planejamento",
+      "nome": "Ver histórico e planejar próximas features",
+      "documentos": ["13_sprint_history.md", "14_roadmap.md"]
+    }
+  ],
+
+  "indices_busca": {
+    "por_area": {
+      "arquitetura":   ["02_arquitetura.md", "03_modelos_dados.md"],
+      "componentes":   ["04_componentes_visuais.md", "12_guia_desenvolvimento.md"],
+      "eventos":       ["05_sistema_eventos.md"],
+      "regras":        ["06_sistema_regras.md"],
+      "api":           ["07_api_endpoints.md"],
+      "frontend":      ["08_frontend_designer.md"],
+      "fluxos":        ["09_fluxos_usuario.md"],
+      "export":        ["10_export_preview.md"],
+      "templates":     ["11_templates.md"],
+      "historico":     ["13_sprint_history.md"],
+      "roadmap":       ["14_roadmap.md"],
+      "geral":         ["README.md", "01_visao_geral.md"]
+    },
+    "por_diagrama": {
+      "C4Context":       ["01_visao_geral.md"],
+      "C4Container":     ["02_arquitetura.md"],
+      "C4Component":     ["02_arquitetura.md"],
+      "erDiagram":       ["03_modelos_dados.md", "11_templates.md", "14_roadmap.md"],
+      "classDiagram":    ["03_modelos_dados.md", "04_componentes_visuais.md", "05_sistema_eventos.md", "06_sistema_regras.md", "08_frontend_designer.md", "10_export_preview.md"],
+      "sequenceDiagram": ["02_arquitetura.md", "05_sistema_eventos.md", "06_sistema_regras.md", "07_api_endpoints.md", "08_frontend_designer.md", "09_fluxos_usuario.md", "10_export_preview.md", "11_templates.md", "12_guia_desenvolvimento.md"],
+      "stateDiagram":    ["01_visao_geral.md", "05_sistema_eventos.md", "08_frontend_designer.md", "10_export_preview.md", "11_templates.md", "14_roadmap.md"],
+      "gantt":           ["14_roadmap.md"],
+      "timeline":        ["13_sprint_history.md"],
+      "graph":           ["07_api_endpoints.md", "08_frontend_designer.md", "10_export_preview.md", "14_roadmap.md"]
+    },
+    "por_tag": {
+      "dsb-runtime":    ["05_sistema_eventos.md", "10_export_preview.md"],
+      "multi-select":   ["08_frontend_designer.md", "09_fluxos_usuario.md"],
+      "layers-panel":   ["08_frontend_designer.md", "09_fluxos_usuario.md"],
+      "templates":      ["11_templates.md", "09_fluxos_usuario.md"],
+      "export-zip":     ["10_export_preview.md", "07_api_endpoints.md"],
+      "basecomponent":  ["04_componentes_visuais.md", "12_guia_desenvolvimento.md"],
+      "sqlite":         ["03_modelos_dados.md", "02_arquitetura.md"],
+      "blueprint":      ["02_arquitetura.md", "07_api_endpoints.md", "12_guia_desenvolvimento.md"]
+    }
+  }
+}
