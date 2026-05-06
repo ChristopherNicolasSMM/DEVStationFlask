@@ -6,7 +6,7 @@
 - Template base: NiceAdmin (você inclui o `assets/` manualmente)
 
 ---
-
+ 
 ## Estrutura de Pastas
 
 ```
