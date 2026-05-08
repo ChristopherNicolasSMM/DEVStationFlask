@@ -1,131 +1,300 @@
 {% extends "base.html" %}
+{% block title %}DS_HOME — DevStation Builder{% endblock %}
 
-{% block title %}Dashboard — DevStation Builder{% endblock %}
+{% block extra_styles %}
+.proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.proj-card {
+  background: #fff; border: 1px solid var(--ds-border); border-radius: 8px;
+  overflow: hidden; cursor: pointer; transition: box-shadow .15s, transform .15s;
+}
+.proj-card:hover { box-shadow: 0 6px 20px rgba(1,41,112,.1); transform: translateY(-2px); }
+.proj-thumb {
+  height: 110px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #eef2ff 0%, #f6f9ff 100%);
+  border-bottom: 1px solid var(--ds-border);
+}
+.proj-thumb i { font-size: 2.5rem; color: var(--ds-accent); opacity: .3; }
+.proj-body { padding: 12px; }
+.proj-name { font-weight: 600; font-size: .9rem; color: var(--ds-primary);
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proj-meta { font-size: .74rem; color: #888; margin-top: 4px; }
+.proj-actions { padding: 8px 12px; border-top: 1px solid var(--ds-border);
+                display: flex; gap: 6px; }
+.proj-actions a, .proj-actions button {
+  flex: 1; text-align: center; padding: 5px; border-radius: 4px;
+  font-size: .78rem; text-decoration: none; border: 1px solid var(--ds-border);
+  background: #fff; color: var(--ds-text); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.proj-actions a.primary { background: var(--ds-accent); color: #fff; border-color: var(--ds-accent); }
+.proj-actions a:hover { opacity: .85; }
+.proj-actions .btn-del:hover { background: #fce4ec; color: #b71c1c; border-color: #f8bbd0; }
 
-{% block content %}
+/* Launchpad */
+.tx-launchpad-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.tx-lp-card {
+  width: 150px; background: #fff; border: 1px solid var(--ds-border); border-radius: 8px;
+  padding: 14px 10px 10px; text-align: center; cursor: pointer;
+  transition: box-shadow .15s, transform .15s;
+}
+.tx-lp-card:hover { box-shadow: 0 4px 14px rgba(1,41,112,.1); transform: translateY(-2px); }
+.tx-lp-icon { font-size: 1.8rem; color: var(--ds-accent); }
+.tx-lp-code { font-size: .7rem; font-weight: 700; color: var(--ds-primary); margin-top: 6px;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-lp-label { font-size: .72rem; color: #888; margin-top: 2px; line-height: 1.3; }
 
-<!-- Page Title -->
-<div class="pagetitle">
-  <h1>Meus Projetos</h1>
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="/">Home</a></li>
-      <li class="breadcrumb-item active">Dashboard</li>
-    </ol>
-  </nav>
-</div>
-
-<!-- ── Action bar ────────────────────────────────────── -->
-<div class="d-flex align-items-center justify-content-between mb-4">
-  <span class="text-muted" style="font-size:14px;">
-    <i class="bi bi-folder2-open me-1"></i>
-    <strong>{{ projects|length }}</strong> projeto(s)
-  </span>
-  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoProjeto">
-    <i class="bi bi-plus-lg me-1"></i>Novo Projeto
-  </button>
-</div>
-
-{% if projects %}
-<!-- ── Project Grid ──────────────────────────────────── -->
-<div class="row g-4" id="gridProjetos">
-  {% for p in projects %}
-  <div class="col-xl-3 col-lg-4 col-md-6" id="card-{{ p.id }}">
-    <div class="proj-card" onclick="window.location='/designer/{{ p.id }}'">
-
-      <!-- Thumbnail -->
-      <div class="proj-thumb">
-        <i class="bi bi-layout-wtf"></i>
-      </div>
-
-      <!-- Body -->
-      <div class="card-body">
-        <div class="proj-title" title="{{ p.name }}">{{ p.name }}</div>
-        <div class="proj-meta">
-          <small><i class="bi bi-files"></i> {{ p.page_count }} página(s)</small>
-          <small>
-            <i class="bi bi-clock"></i>
-            {{ p.updated_at.strftime('%d/%m/%Y %H:%M') if p.updated_at else '—' }}
-          </small>
-        </div>
-      </div>
-
-      <!-- Footer actions -->
-      <div class="card-footer">
-        <a href="/designer/{{ p.id }}"
-           class="btn btn-sm btn-primary flex-fill"
-           onclick="event.stopPropagation()">
-          <i class="bi bi-pencil-fill me-1"></i>Designer
-        </a>
-        <a href="/projetos/{{ p.id }}/preview/{{ p.pages[0].id if p.pages else 0 }}"
-           target="_blank"
-           class="btn btn-sm btn-outline-info"
-           onclick="event.stopPropagation()" title="Preview">
-          <i class="bi bi-eye-fill"></i>
-        </a>
-        <a href="/projetos/{{ p.id }}/exportar"
-           class="btn btn-sm btn-outline-success"
-           onclick="event.stopPropagation()" title="Exportar ZIP">
-          <i class="bi bi-download"></i>
-        </a>
-        <button class="btn btn-sm btn-outline-danger btn-del"
-                data-id="{{ p.id }}"
-                onclick="event.stopPropagation()" title="Deletar projeto">
-          <i class="bi bi-trash3"></i>
-        </button>
-      </div>
-
-    </div>
-  </div>
-  {% endfor %}
-</div>
-
-{% else %}
-<!-- ── Empty state ───────────────────────────────────── -->
-<div class="empty-state">
-  <i class="bi bi-layout-wtf empty-icon"></i>
-  <h5>Nenhum projeto ainda</h5>
-  <p class="mb-4">Crie seu primeiro projeto e comece a construir<br>páginas visualmente com drag &amp; drop.</p>
-  <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalNovoProjeto">
-    <i class="bi bi-plus-lg me-1"></i>Criar Primeiro Projeto
-  </button>
-</div>
-{% endif %}
-
+/* Plugins / Addons list */
+.ext-item { display: flex; align-items: center; padding: 10px 0;
+            border-bottom: 1px solid var(--ds-border); }
+.ext-icon { width: 36px; height: 36px; border-radius: 6px; background: var(--ds-light);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--ds-accent); font-size: 1.1rem; margin-right: 12px; flex-shrink: 0; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+              margin-right: 5px; }
+.status-active   { background: #2eca6a; }
+.status-inactive { background: #bbb; }
 {% endblock %}
 
-{% block extra_js %}
+{% block content %}
+<div class="ds-content">
+
+  <!-- Page Title -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h4 class="fw-bold text-primary-ds mb-0">
+        <i class="bi bi-house-fill me-2"></i>DS_HOME — Launchpad
+      </h4>
+      <p class="small text-muted mt-1">Centro de navegação da plataforma DevStation</p>
+    </div>
+    <button class="btn-ds-primary" onclick="openNewProjectModal()">
+      <i class="bi bi-plus-lg"></i> Novo Projeto
+    </button>
+  </div>
+
+  <!-- Abas -->
+  <div class="ds-tabs">
+    <button class="ds-tab {% if active_tab=='home' %}active{% endif %}" onclick="switchTab('home')">
+      <i class="bi bi-grid-3x3-gap me-1"></i>Transações
+    </button>
+    <button class="ds-tab {% if active_tab=='projects' or active_tab=='home' %}{% endif %}" onclick="switchTab('projects')" id="tabProjects">
+      <i class="bi bi-folder2-open me-1"></i>Projetos ({{ projects|length }})
+    </button>
+    <button class="ds-tab" onclick="switchTab('plugins')">
+      <i class="bi bi-puzzle me-1"></i>Plugins ({{ plugins|length }})
+    </button>
+    <button class="ds-tab" onclick="switchTab('addons')">
+      <i class="bi bi-box-seam me-1"></i>Addons ({{ addons|length }})
+    </button>
+    <button class="ds-tab" onclick="window.location='/transacoes/DS_BUILD'">
+      <i class="bi bi-hammer me-1"></i>Build
+      {% if last_build %}
+        <span style="background:{{ '#2eca6a' if last_build.status=='passed' else '#dc3545' if last_build.status=='failed' else '#888' }};
+                     color:#fff;border-radius:10px;padding:1px 6px;font-size:.65rem;margin-left:4px;">
+          {{ last_build.status }}
+        </span>
+      {% endif %}
+    </button>
+  </div>
+
+  <!-- TAB: Transações (Launchpad) -->
+  <div id="tab-home" class="tab-pane {% if active_tab=='home' %}active{% endif %}">
+    <div class="ds-card mb-3">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <input type="text" id="txLaunchpadSearch" class="form-control-ds"
+               placeholder="🔍  Buscar transação..." style="flex:1;padding:8px 12px;border:1px solid var(--ds-border);border-radius:5px;font-size:.88rem;outline:none;">
+      </div>
+      <div id="txLaunchpad">
+        <!-- Preenchido por transaction_nav.js -->
+        <div class="text-muted small">Carregando transações…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Projetos -->
+  <div id="tab-projects" class="tab-pane" style="display:none;">
+    {% if projects %}
+    <div class="proj-grid">
+      {% for p in projects %}
+      <div class="proj-card" id="proj-{{ p.id }}">
+        <div class="proj-thumb"><i class="bi bi-layout-wtf"></i></div>
+        <div class="proj-body">
+          <div class="proj-name" title="{{ p.name }}">{{ p.name }}</div>
+          <div class="proj-meta">
+            <i class="bi bi-files me-1"></i>{{ p.page_count }} página(s)
+            &nbsp;·&nbsp;
+            <i class="bi bi-clock me-1"></i>{{ p.updated_at }}
+          </div>
+        </div>
+        <div class="proj-actions">
+          <a class="primary" href="/designer/{{ p.id }}">
+            <i class="bi bi-pencil-fill"></i> Editar
+          </a>
+          <a href="/api/projetos/{{ p.id }}/exportar-zip" title="Exportar ZIP">
+            <i class="bi bi-download"></i>
+          </a>
+          <button class="btn-del" title="Deletar"
+                  onclick="deleteProject({{ p.id }}, '{{ p.name }}')">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:60px 20px;">
+      <i class="bi bi-layout-wtf" style="font-size:4rem;color:#c8d4ff;"></i>
+      <h5 class="text-muted mt-3">Nenhum projeto ainda</h5>
+      <p class="small text-muted mb-3">Crie seu primeiro projeto para começar.</p>
+      <button class="btn-ds-primary" onclick="openNewProjectModal()">
+        <i class="bi bi-plus-lg"></i> Criar Projeto
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- TAB: Plugins -->
+  <div id="tab-plugins" class="tab-pane" style="display:none;">
+    <div class="ds-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="ds-card-title">Plugins Ativos</span>
+        <a href="/transacoes/DS_PLUGINS" class="btn-ds-outline" style="font-size:.8rem;padding:4px 10px;">
+          Gerenciar Plugins →
+        </a>
+      </div>
+      {% if plugins %}
+        {% for pl in plugins %}
+        <div class="ext-item">
+          <div class="ext-icon"><i class="bi bi-puzzle"></i></div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold small">{{ pl.name }}</div>
+            <div class="small text-muted">{{ pl.code }} · v{{ pl.version }}</div>
+          </div>
+          <span class="status-dot status-active"></span>
+          <span class="small text-muted">ativo</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-muted small">Nenhum plugin ativo. <a href="/transacoes/DS_PLUGINS">Gerenciar plugins</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- TAB: Addons -->
+  <div id="tab-addons" class="tab-pane" style="display:none;">
+    <div class="ds-card">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="ds-card-title">Addons Ativos</span>
+        <a href="/transacoes/DS_ADDONS" class="btn-ds-outline" style="font-size:.8rem;padding:4px 10px;">
+          Gerenciar Addons →
+        </a>
+      </div>
+      {% if addons %}
+        {% for ad in addons %}
+        <div class="ext-item">
+          <div class="ext-icon"><i class="bi bi-box-seam"></i></div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold small">{{ ad.name }}</div>
+            <div class="small text-muted">{{ ad.code }} · {{ ad.addon_type }} · v{{ ad.version }}</div>
+          </div>
+          <span class="status-dot status-active"></span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-muted small">Nenhum addon ativo. <a href="/transacoes/DS_ADDONS">Gerenciar addons</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Novo Projeto -->
+<div id="modalNewProject" style="display:none;position:fixed;inset:0;z-index:5000;
+     background:rgba(0,0,0,.45);align-items:center;justify-content:center;"
+     onclick="if(event.target===this)closeNewProjectModal()">
+  <div style="background:#fff;border-radius:10px;padding:28px;width:400px;max-width:95vw;
+              box-shadow:0 8px 40px rgba(0,0,0,.2);">
+    <h5 class="fw-bold text-primary-ds mb-3"><i class="bi bi-plus-circle me-2"></i>Novo Projeto</h5>
+    <label class="small fw-semibold" style="display:block;margin-bottom:6px;">Nome</label>
+    <input id="newProjectName" type="text" placeholder="Ex: CRM, Landing Page, Portal…"
+           style="width:100%;padding:8px 10px;border:1px solid var(--ds-border);border-radius:5px;
+                  font-size:.9rem;outline:none;margin-bottom:12px;">
+    <label class="small fw-semibold" style="display:block;margin-bottom:6px;">Descrição <span class="text-muted fw-normal">(opcional)</span></label>
+    <input id="newProjectDesc" type="text" placeholder="Breve descrição…"
+           style="width:100%;padding:8px 10px;border:1px solid var(--ds-border);border-radius:5px;
+                  font-size:.9rem;outline:none;margin-bottom:16px;">
+    <div class="d-flex gap-2" style="justify-content:flex-end;">
+      <button class="btn-ds-outline" onclick="closeNewProjectModal()">Cancelar</button>
+      <button class="btn-ds-primary" onclick="createProject()">
+        <i class="bi bi-plus-lg"></i> Criar
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-  /* ── Deletar projeto ─────────────────────────────── */
-  document.querySelectorAll('.btn-del').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const pname = btn.closest('.proj-card')?.querySelector('.proj-title')?.textContent?.trim() || 'este projeto';
-      if (!confirm(`Deletar "${pname}" permanentemente?\nEsta ação não pode ser desfeita.`)) return;
+  // ── Abas ─────────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.ds-tab').forEach(t => t.classList.remove('active'));
+    var pane = document.getElementById('tab-' + tab);
+    var btn  = event && event.currentTarget;
+    if (pane)  pane.style.display = '';
+    if (btn)   btn.classList.add('active');
+    if (tab === 'home') history.pushState(null, '', '/?tab=home');
+    if (tab === 'projects') history.pushState(null, '', '/?tab=projects');
+  }
 
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  // Mostra aba correta no load
+  (function () {
+    var tab = '{{ active_tab }}' || 'home';
+    var pane = document.getElementById('tab-' + tab);
+    if (pane) { pane.style.display = ''; }
+    // Ativa botão correto
+    var tabs = document.querySelectorAll('.ds-tab');
+    var idx = {'home':0,'projects':1,'plugins':2,'addons':3}[tab] || 0;
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  })();
 
-      try {
-        const pid = btn.dataset.id;
-        const r   = await fetch(`/projetos/${pid}/deletar`, { method: 'POST' });
-        const d   = await r.json();
-        if (d.ok) {
-          const card = document.getElementById(`card-${pid}`);
-          card.style.transition = 'opacity .3s, transform .3s';
-          card.style.opacity    = '0';
-          card.style.transform  = 'scale(.9)';
-          setTimeout(() => {
-            card.remove();
-            if (!document.querySelector('.btn-del')) location.reload();
-          }, 300);
-        }
-      } catch (err) {
-        alert('Erro ao deletar: ' + err.message);
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-trash3"></i>';
-      }
+  // ── Criar projeto ─────────────────────────────────────────────
+  var _modalOpen = false;
+  function openNewProjectModal() {
+    var m = document.getElementById('modalNewProject');
+    if (m) { m.style.display = 'flex'; _modalOpen = true; }
+  }
+  function closeNewProjectModal() {
+    var m = document.getElementById('modalNewProject');
+    if (m) { m.style.display = 'none'; _modalOpen = false; }
+  }
+  function createProject() {
+    var name = document.getElementById('newProjectName').value.trim() || 'Novo Projeto';
+    var desc = document.getElementById('newProjectDesc').value.trim();
+    fetch('/api/projetos', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name, description: desc})
+    })
+    .then(r => r.json())
+    .then(function(d) {
+      closeNewProjectModal();
+      window.location.href = '/designer/' + d.id;
     });
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && _modalOpen) createProject();
+    if (e.key === 'Escape' && _modalOpen) closeNewProjectModal();
   });
+
+  // ── Deletar projeto ───────────────────────────────────────────
+  function deleteProject(pid, name) {
+    if (!confirm('Deletar "' + name + '"?\nEsta ação é permanente.')) return;
+    fetch('/api/projetos/' + pid, {method:'DELETE'})
+      .then(function() {
+        var el = document.getElementById('proj-' + pid);
+        if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 310); }
+        dsToast('Projeto "' + name + '" deletado.', 'info');
+      });
+  }
 </script>
 {% endblock %}

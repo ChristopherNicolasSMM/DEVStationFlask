@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}DS_PLUGINS — Gerenciador de Plugins{% endblock %}
+{% block content %}
+<div class="ds-content">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold text-primary-ds mb-0"><i class="bi bi-puzzle me-2"></i>DS_PLUGINS</h4>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-ds-outline" onclick="rediscoverPlugins()">
+        <i class="bi bi-arrow-repeat me-1"></i>Re-escanear
+      </button>
+    </div>
+  </div>
+  <div class="ds-card">
+    <div class="ds-card-title">Plugins Descobertos ({{ plugins|length }})</div>
+    {% if plugins %}
+    <table style="width:100%;border-collapse:collapse;font-size:.83rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--ds-border);">
+          <th style="padding:8px;">Nome</th>
+          <th style="padding:8px;">Código</th>
+          <th style="padding:8px;">Versão</th>
+          <th style="padding:8px;">Transações</th>
+          <th style="padding:8px;">Status</th>
+          <th style="padding:8px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pl in plugins %}
+        <tr style="border-bottom:1px solid var(--ds-border);" id="pl-{{ pl.code }}">
+          <td style="padding:8px;font-weight:600;">{{ pl.name }}</td>
+          <td style="padding:8px;font-family:monospace;font-size:.78rem;">{{ pl.code }}</td>
+          <td style="padding:8px;">{{ pl.version }}</td>
+          <td style="padding:8px;">{{ pl.transaction_codes|join(', ') or '—' }}</td>
+          <td style="padding:8px;">
+            <span style="background:{{ '#e8f5e9' if pl.is_active else '#fff3e0' }};
+                         color:{{ '#2e7d32' if pl.is_active else '#e65100' }};
+                         padding:2px 8px;border-radius:3px;font-size:.75rem;">
+              {{ 'Ativo' if pl.is_active else 'Inativo' }}
+            </span>
+          </td>
+          <td style="padding:8px;display:flex;gap:4px;">
+            {% if pl.is_active %}
+            <button class="btn-ds-danger" style="font-size:.75rem;padding:4px 10px;"
+                    onclick="togglePlugin('{{ pl.code }}', false)">Desativar</button>
+            {% else %}
+            <button class="btn-ds-primary" style="font-size:.75rem;padding:4px 10px;"
+                    onclick="togglePlugin('{{ pl.code }}', true)">Ativar</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-muted small">Nenhum plugin encontrado em <code>plugins/</code>. Adicione um <code>plugin.json</code> na pasta e clique em Re-escanear.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+function togglePlugin(code, activate) {
+  var confirmed = confirm((activate ? 'Ativar' : 'Desativar') + ' o plugin "' + code + '"?');
+  if (!confirmed) return;
+  var url = '/api/plugins/' + code + (activate ? '/ativar' : '/desativar');
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({confirmed: true, triggered_by: 'usuario'})})
+    .then(r => r.json())
+    .then(function(d) {
+      dsToast((activate ? 'Plugin ativado.' : 'Plugin desativado.'), 'success');
+      setTimeout(() => location.reload(), 800);
+    });
+}
+function rediscoverPlugins() {
+  fetch('/api/plugins/redescobrir', {method:'POST'})
+    .then(r => r.json())
+    .then(function(d) {
+      dsToast(d.total + ' plugin(s) descoberto(s).', 'info');
+      setTimeout(() => location.reload(), 800);
+    });
+}
+</script>
+{% endblock %}

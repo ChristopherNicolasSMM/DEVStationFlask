@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}DS_ODATA — Gerenciador OData{% endblock %}
+{% block content %}
+<div class="ds-content">
+  <h4 class="fw-bold text-primary-ds mb-3"><i class="bi bi-cloud-arrow-down me-2"></i>DS_ODATA — Gerenciador OData</h4>
+  <div class="ds-card">
+    <div class="ds-card-title">Conexões por Projeto</div>
+    <p class="small text-muted mb-3">Para configurar conexões OData de um projeto específico, abra o Designer e use a aba <strong>OData</strong> no painel esquerdo.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      {% for p in projects %}
+      <a href="/designer/{{ p.id }}" style="display:inline-flex;align-items:center;gap:6px;
+         padding:8px 14px;background:#f6f9ff;border:1px solid var(--ds-border);border-radius:5px;
+         text-decoration:none;color:var(--ds-primary);font-size:.83rem;transition:box-shadow .15s;"
+         onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'"
+         onmouseout="this.style.boxShadow=''">
+        <i class="bi bi-layout-wtf text-accent"></i>
+        {{ p.name }}
+        <i class="bi bi-arrow-right-short text-muted"></i>
+      </a>
+      {% endfor %}
+      {% if not projects %}
+      <div class="text-muted small">Nenhum projeto criado ainda.</div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="ds-card mt-3">
+    <div class="ds-card-title">Referência: Protocolo OData V4</div>
+    <div class="small text-muted" style="line-height:1.7;">
+      <p>O DevStation suporta a integração com servidores OData V4 que expõem um endpoint <code>$metadata.json</code> com anotações de UI.</p>
+      <p>Campos suportados: <code>TEXT</code>, <code>NUMBER</code>, <code>DATE</code>, <code>BOOLEAN</code>, <code>DROPDOWN</code></p>
+      <p>Anotações reconhecidas: <code>ui.list_view</code>, <code>ui.form.groups</code>, <code>required</code>, <code>max_length</code></p>
+      <p>Instale a biblioteca de referência: <code>pip install s2modatapy</code></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

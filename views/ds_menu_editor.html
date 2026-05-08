@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}DS_MENU — Editor de Menu{% endblock %}
+{% block content %}
+<div class="ds-content">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold text-primary-ds mb-0"><i class="bi bi-list-ul me-2"></i>DS_MENU — Editor de Menu</h4>
+    <div style="display:flex;gap:8px;">
+      {% if projects %}
+      <select id="selProject" class="props-input" style="padding:6px 10px;"
+              onchange="window.location='/transacoes/DS_MENU?pid='+this.value">
+        {% for p in projects %}
+        <option value="{{ p.id }}" {{ 'selected' if project and p.id == project.id else '' }}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <button class="btn-ds-primary" onclick="saveMenu()" id="btnSaveMenu">
+        <i class="bi bi-floppy me-1"></i>Salvar Menu
+      </button>
+    </div>
+  </div>
+
+  {% if project and menu %}
+  <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;">
+    <!-- Grupos -->
+    <div class="ds-card">
+      <div class="ds-card-title">Grupos</div>
+      <div id="menuGroupList">
+        {% for key, grp in menu.config.items() %}
+        <div class="page-item" onclick="selectGroup('{{ key }}')" data-gkey="{{ key }}"
+             style="background:#fff;border:1px solid var(--ds-border);border-radius:5px;margin-bottom:4px;padding:8px 10px;cursor:pointer;">
+          <i class="bi bi-folder me-2 text-accent"></i>
+          <span>{{ grp.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Itens do grupo selecionado -->
+    <div class="ds-card">
+      <div class="ds-card-title" id="groupPanelTitle">Selecione um grupo</div>
+      <div id="menuItemList">
+        <div class="text-muted small">Clique em um grupo para ver seus itens.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  var _menuConfig = {{ menu.config | tojson }};
+  var _menuId     = {{ menu.id }};
+  var _currentGroup = null;
+
+  function selectGroup(key) {
+    _currentGroup = key;
+    var grp = _menuConfig[key];
+    document.getElementById('groupPanelTitle').textContent = grp.label;
+    document.querySelectorAll('[data-gkey]').forEach(function(el) {
+      el.style.background = el.dataset.gkey === key ? '#eef2ff' : '#fff';
+    });
+    renderItems(grp.items || []);
+  }
+
+  function renderItems(items) {
+    var html = items.map(function(item, i) {
+      if (item.separator) return '<div style="height:1px;background:var(--ds-border);margin:4px 0;"></div>';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--ds-border);border-radius:5px;margin-bottom:4px;background:#fff;">' +
+             '<i class="bi bi-grip-vertical text-muted"></i>' +
+             '<span style="flex:1;font-size:.85rem;">' + item.label + '</span>' +
+             (item.shortcut ? '<kbd style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:.72rem;">' + item.shortcut + '</kbd>' : '') +
+             '<span style="font-size:.72rem;color:#888;margin-left:4px;">' + (item.action || '') + '</span>' +
+             '</div>';
+    }).join('');
+    document.getElementById('menuItemList').innerHTML = html || '<div class="text-muted small">Grupo sem itens.</div>';
+  }
+
+  function saveMenu() {
+    fetch('/api/menus/' + _menuId, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({config: _menuConfig})
+    }).then(function() { dsToast('Menu salvo com sucesso.', 'success'); });
+  }
+  </script>
+  {% else %}
+  <div class="ds-card">
+    <div class="text-muted small">Selecione um projeto para editar o menu.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

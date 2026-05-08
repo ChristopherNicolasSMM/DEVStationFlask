@@ -1,20 +1,33 @@
 """
-models/__init__.py
-==================
-Expõe a instância do SQLAlchemy e todos os Models
-para que importações externas fiquem simples:
-    from models import db, Project, Page, Component, Menu
+models/__init__.py — v3.0
+===========================
+Expõe a instância do SQLAlchemy e todos os Models.
 """
 
 from flask_sqlalchemy import SQLAlchemy
 
-# Instância única do SQLAlchemy (injetada na app via db.init_app)
 db = SQLAlchemy()
 
-# Importa os models para que o SQLAlchemy os conheça
-from .project   import Project    # noqa: E402, F401
-from .page      import Page       # noqa: E402, F401
-from .component import Component  # noqa: E402, F401
-from .menu      import Menu       # noqa: E402, F401
+from .project          import Project          # noqa
+from .page             import Page             # noqa
+from .component        import Component        # noqa
+from .menu             import Menu             # noqa
+from .odata_connection import ODataConnection  # noqa
+from .page_version     import PageVersion      # noqa
+from .version_backup   import VersionBackup    # noqa
+from .transaction      import Transaction      # noqa
+from .plugin           import Plugin           # noqa
+from .addon            import Addon            # noqa
+from .addon_log        import AddonLog         # noqa
+from .build_log        import BuildLog         # noqa
 
-__all__ = ["db", "Project", "Page", "Component", "Menu"]
+__all__ = [
+    "db",
+    "Project", "Page", "Component", "Menu",
+    "ODataConnection",
+    "PageVersion", "VersionBackup",
+    "Transaction",
+    "Plugin",
+    "Addon", "AddonLog",
+    "BuildLog",
+]

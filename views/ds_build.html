@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}DS_BUILD — Build & Deploy{% endblock %}
+{% block content %}
+<div class="ds-content">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold text-primary-ds mb-0"><i class="bi bi-hammer me-2"></i>DS_BUILD — Pipeline</h4>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-ds-outline" onclick="runTests()"><i class="bi bi-play-fill me-1"></i>Executar Testes</button>
+      <button class="btn-ds-primary" onclick="createZip()"><i class="bi bi-download me-1"></i>Gerar ZIP</button>
+    </div>
+  </div>
+
+  <!-- Status atual -->
+  <div class="ds-card mb-3" id="buildStatusCard">
+    <div class="ds-card-title">Status do Último Build</div>
+    {% if build_logs %}
+      {% set last = build_logs[0] %}
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="padding:4px 12px;border-radius:4px;font-weight:600;font-size:.85rem;
+                     background:{{ '#e8f5e9' if last.status=='passed' else '#fce4ec' if last.status=='failed' else '#fff3e0' }};
+                     color:{{ '#2e7d32' if last.status=='passed' else '#b71c1c' if last.status=='failed' else '#e65100' }};">
+          {{ last.status.upper() }}
+        </span>
+        <span class="small text-muted">v{{ last.version }} · {{ last.started_at }}</span>
+        {% if last.tests_total %}
+        <span class="small">✅ {{ last.tests_passed }} passed &nbsp; ❌ {{ last.tests_failed }} failed</span>
+        {% endif %}
+        {% if last.zip_name %}
+        <a href="/api/build/zip/{{ last.id }}/download" class="btn-ds-outline" style="font-size:.78rem;padding:3px 10px;margin-left:auto;">
+          <i class="bi bi-download me-1"></i>{{ last.zip_name }}
+        </a>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="text-muted small">Nenhum build executado ainda.</div>
+    {% endif %}
+  </div>
+
+  <!-- Histórico -->
+  <div class="ds-card">
+    <div class="ds-card-title">Histórico de Builds ({{ build_logs|length }})</div>
+    <div id="buildOutput" style="background:#0d1020;border-radius:6px;padding:12px;
+         font-family:monospace;font-size:.78rem;color:#8aadff;min-height:60px;
+         max-height:300px;overflow-y:auto;margin-bottom:12px;display:none;"></div>
+    {% if build_logs %}
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--ds-border);">
+          <th style="padding:6px 8px;">#</th>
+          <th style="padding:6px 8px;">Status</th>
+          <th style="padding:6px 8px;">Testes</th>
+          <th style="padding:6px 8px;">Duração</th>
+          <th style="padding:6px 8px;">Data</th>
+          <th style="padding:6px 8px;">ZIP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in build_logs %}
+        <tr style="border-bottom:1px solid var(--ds-border);" id="build-{{ b.id }}">
+          <td style="padding:6px 8px;">{{ b.id }}</td>
+          <td style="padding:6px 8px;">
+            <span style="padding:2px 6px;border-radius:3px;font-size:.72rem;
+                         background:{{ '#e8f5e9' if b.status=='passed' else '#fce4ec' if b.status=='failed' else '#fff3e0' }};
+                         color:{{ '#2e7d32' if b.status=='passed' else '#b71c1c' if b.status=='failed' else '#e65100' }};">
+              {{ b.status }}
+            </span>
+          </td>
+          <td style="padding:6px 8px;">
+            {{ b.tests_passed or 0 }}✅ {{ b.tests_failed or 0 }}❌
+          </td>
+          <td style="padding:6px 8px;color:#888;">
+            {{ (b.duration_seconds ~ 's') if b.duration_seconds else '—' }}
+          </td>
+          <td style="padding:6px 8px;color:#888;">{{ b.started_at }}</td>
+          <td style="padding:6px 8px;">
+            {% if b.zip_name %}
+            <a href="/api/build/zip/{{ b.id }}/download" class="btn-ds-outline" style="font-size:.72rem;padding:2px 7px;">
+              <i class="bi bi-download"></i>
+            </a>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-muted small">Nenhum build executado.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+function runTests() {
+  dsToast('Iniciando testes… aguarde.', 'info');
+  var output = document.getElementById('buildOutput');
+  output.style.display = 'block';
+  output.textContent = 'Executando pytest…\n';
+  fetch('/api/build/run-tests', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({triggered_by:'usuario'})
+  })
+  .then(r => r.json())
+  .then(function(d) {
+    var bid = d.build_id;
+    var poll = setInterval(function() {
+      fetch('/api/build/logs/' + bid).then(r => r.json()).then(function(b) {
+        if (b.status !== 'running') {
+          clearInterval(poll);
+          output.textContent = b.test_output || 'Sem saída.';
+          output.scrollTop = output.scrollHeight;
+          dsToast('Build ' + b.status.toUpperCase(), b.status === 'passed' ? 'success' : 'danger');
+          setTimeout(() => location.reload(), 1500);
+        }
+      });
+    }, 1000);
+  });
+}
+
+function createZip() {
+  dsToast('Gerando ZIP de distribuição…', 'info');
+  fetch('/api/build/create-zip', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({triggered_by:'usuario'})
+  })
+  .then(r => r.json())
+  .then(function(d) {
+    if (d.ok) dsToast('ZIP gerado: ' + d.zip_name, 'success');
+    else dsToast('Erro: ' + d.error, 'danger');
+    setTimeout(() => location.reload(), 1000);
+  });
+}
+</script>
+{% endblock %}

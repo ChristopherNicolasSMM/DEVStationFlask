@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}DS_ADDONS — Gerenciador de Addons{% endblock %}
+{% block content %}
+<div class="ds-content">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold text-primary-ds mb-0"><i class="bi bi-box-seam me-2"></i>DS_ADDONS</h4>
+    <label class="btn-ds-primary" style="cursor:pointer;" title="Upload de pacote .zip">
+      <i class="bi bi-upload me-1"></i>Instalar Addon
+      <input type="file" accept=".zip" id="addonUploadInput" style="display:none;" onchange="uploadAddon(this)">
+    </label>
+  </div>
+
+  <div class="ds-card">
+    <div class="ds-card-title">Addons Registrados ({{ addons|length }})</div>
+    {% if addons %}
+    <table style="width:100%;border-collapse:collapse;font-size:.83rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--ds-border);">
+          <th style="padding:8px;">Nome</th>
+          <th style="padding:8px;">Código</th>
+          <th style="padding:8px;">Tipo</th>
+          <th style="padding:8px;">Versão</th>
+          <th style="padding:8px;">Status</th>
+          <th style="padding:8px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ad in addons %}
+        <tr style="border-bottom:1px solid var(--ds-border);" id="ad-{{ ad.code }}">
+          <td style="padding:8px;font-weight:600;">{{ ad.name }}</td>
+          <td style="padding:8px;font-family:monospace;font-size:.78rem;">{{ ad.code }}</td>
+          <td style="padding:8px;">{{ ad.addon_type }}</td>
+          <td style="padding:8px;">{{ ad.version }}</td>
+          <td style="padding:8px;">
+            {% set status_colors = {'available':'#e3f2fd:#1565c0','pending_install':'#fff8e1:#e65100','installed':'#e8f5e9:#2e7d32','disabled':'#f5f5f5:#666','error':'#fce4ec:#b71c1c'} %}
+            <span style="padding:2px 8px;border-radius:3px;font-size:.75rem;
+                         background:{{ {'available':'#e3f2fd','pending_install':'#fff8e1','installed':'#e8f5e9','disabled':'#f5f5f5','error':'#fce4ec'}.get(ad.status,'#f5f5f5') }};
+                         color:{{ {'available':'#1565c0','pending_install':'#e65100','installed':'#2e7d32','disabled':'#666','error':'#b71c1c'}.get(ad.status,'#666') }};">
+              {{ ad.status }}
+            </span>
+          </td>
+          <td style="padding:8px;display:flex;gap:4px;flex-wrap:wrap;">
+            {% if ad.status == 'available' %}
+            <button class="btn-ds-primary" style="font-size:.72rem;padding:3px 8px;"
+                    onclick="installAddon('{{ ad.code }}')">Instalar</button>
+            {% elif ad.status == 'installed' and not ad.is_active %}
+            <button class="btn-ds-primary" style="font-size:.72rem;padding:3px 8px;"
+                    onclick="activateAddon('{{ ad.code }}')">Ativar</button>
+            {% elif ad.is_active %}
+            <button class="btn-ds-outline" style="font-size:.72rem;padding:3px 8px;"
+                    onclick="deactivateAddon('{{ ad.code }}')">Desativar</button>
+            {% endif %}
+            <button class="btn-ds-outline" style="font-size:.72rem;padding:3px 8px;"
+                    onclick="viewLogs('{{ ad.code }}')">
+              <i class="bi bi-list-ul"></i> Log
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-muted small">Nenhum addon registrado. Clique em "Instalar Addon" para fazer upload de um pacote .zip.</div>
+    {% endif %}
+  </div>
+
+  <!-- Log modal -->
+  <div id="addonLogModal" style="display:none;position:fixed;inset:0;z-index:5000;
+       background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:8px;padding:24px;width:600px;max-width:95vw;
+                max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2);">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold text-primary-ds mb-0"><i class="bi bi-list-ul me-2"></i>Log de Instalação</h5>
+        <button onclick="document.getElementById('addonLogModal').style.display='none'"
+                style="background:none;border:none;font-size:1.2rem;cursor:pointer;">×</button>
+      </div>
+      <div id="addonLogContent" style="font-size:.82rem;"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+function uploadAddon(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var fd = new FormData();
+  fd.append('file', file);
+  fd.append('triggered_by', 'usuario');
+  dsToast('Fazendo upload de ' + file.name + '…', 'info');
+  fetch('/api/addons/upload', {method:'POST', body:fd})
+    .then(r => r.json())
+    .then(function(d) {
+      if (d.ok) { dsToast('Addon registrado. Clique em Instalar para prosseguir.', 'success'); setTimeout(() => location.reload(), 900); }
+      else dsToast('Erro: ' + d.error, 'danger');
+    });
+}
+
+function installAddon(code) {
+  if (!confirm('Instalar o addon "' + code + '"?\n\nTodos os passos serão registrados no log.')) return;
+  fetch('/api/addons/' + code + '/instalar', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({confirmed: true, triggered_by: 'usuario'})
+  }).then(r => r.json()).then(function(d) {
+    if (d.ok) { dsToast('Addon instalado. Ative-o para usar.', 'success'); setTimeout(() => location.reload(), 900); }
+    else dsToast('Erro: ' + d.error, 'danger');
+  });
+}
+
+function activateAddon(code) {
+  if (!confirm('Ativar o addon "' + code + '"?')) return;
+  fetch('/api/addons/' + code + '/ativar', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({confirmed: true, triggered_by: 'usuario'})
+  }).then(r => r.json()).then(function(d) {
+    dsToast('Addon ativado.', 'success'); setTimeout(() => location.reload(), 700);
+  });
+}
+
+function deactivateAddon(code) {
+  fetch('/api/addons/' + code + '/desativar', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({triggered_by: 'usuario'})
+  }).then(r => r.json()).then(function() {
+    dsToast('Addon desativado.', 'info'); setTimeout(() => location.reload(), 700);
+  });
+}
+
+function viewLogs(code) {
+  fetch('/api/addons/' + code + '/logs')
+    .then(r => r.json())
+    .then(function(logs) {
+      var html = logs.length ? logs.map(function(l) {
+        var color = l.status === 'success' ? '#2e7d32' : l.status === 'error' ? '#b71c1c' : '#e65100';
+        return '<div style="padding:6px 0;border-bottom:1px solid #eee;">' +
+               '<span style="background:' + color + ';color:#fff;padding:1px 6px;border-radius:3px;font-size:.7rem;margin-right:8px;">' + l.status + '</span>' +
+               '<b>' + l.action + '</b> — ' + l.created_at + '<br>' +
+               '<span style="color:#555;">' + (l.detail || '') + '</span></div>';
+      }).join('') : '<div class="text-muted small">Sem registros de log.</div>';
+      document.getElementById('addonLogContent').innerHTML = html;
+      document.getElementById('addonLogModal').style.display = 'flex';
+    });
+}
+</script>
+{% endblock %}

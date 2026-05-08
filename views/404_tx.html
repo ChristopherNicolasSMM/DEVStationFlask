@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Transação não encontrada{% endblock %}
+{% block content %}
+<div class="ds-content" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+  <div style="text-align:center;max-width:420px;">
+    <i class="bi bi-exclamation-triangle-fill" style="font-size:4rem;color:#f8961e;"></i>
+    <h3 class="fw-bold text-primary-ds mt-3">Transação não encontrada</h3>
+    <p class="text-muted mt-2">
+      O código <strong>{{ code }}</strong> não está registrado ou está inativo na plataforma.
+    </p>
+    <p class="small text-muted mb-4">
+      Verifique se o código está correto ou se o plugin que registra esta transação está ativo.
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <a href="/" class="btn-ds-primary">
+        <i class="bi bi-house me-1"></i>DS_HOME
+      </a>
+      <a href="/api/transacoes" class="btn-ds-outline">
+        <i class="bi bi-list me-1"></i>Ver Transações
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

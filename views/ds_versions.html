@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}DS_VERSIONS — Histórico de Versões{% endblock %}
+{% block content %}
+<div class="ds-content">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="fw-bold text-primary-ds mb-0"><i class="bi bi-clock-history me-2"></i>DS_VERSIONS — Histórico</h4>
+    <a href="/" class="btn-ds-outline" style="font-size:.82rem;padding:5px 12px;">← Voltar</a>
+  </div>
+  <div class="ds-card">
+    <div class="ds-card-title">Versões Recentes ({{ recent_versions|length }})</div>
+    {% if recent_versions %}
+    <table style="width:100%;border-collapse:collapse;font-size:.83rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--ds-border);text-align:left;">
+          <th style="padding:6px 8px;">Label</th>
+          <th style="padding:6px 8px;">Projeto</th>
+          <th style="padding:6px 8px;">Página</th>
+          <th style="padding:6px 8px;">Tipo</th>
+          <th style="padding:6px 8px;">Data</th>
+          <th style="padding:6px 8px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in recent_versions %}
+        <tr style="border-bottom:1px solid var(--ds-border);">
+          <td style="padding:6px 8px;font-weight:600;">{{ v.version_label }}</td>
+          <td style="padding:6px 8px;">P#{{ v.project_id }}</td>
+          <td style="padding:6px 8px;">PG#{{ v.page_id }}</td>
+          <td style="padding:6px 8px;">
+            <span style="background:{{ '#e8f5e9' if not v.is_auto else '#f0f0f0' }};
+                         color:{{ '#2e7d32' if not v.is_auto else '#666' }};
+                         padding:2px 6px;border-radius:3px;font-size:.72rem;">
+              {{ 'Manual' if not v.is_auto else 'Auto' }}
+            </span>
+          </td>
+          <td style="padding:6px 8px;color:#888;">{{ v.created_at }}</td>
+          <td style="padding:6px 8px;">
+            <a href="/designer/{{ v.project_id }}" class="btn-ds-outline" style="font-size:.75rem;padding:3px 8px;">
+              <i class="bi bi-pencil"></i> Abrir
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-muted small">Nenhuma versão registrada ainda. Versões são criadas automaticamente a cada save no Designer.</div>
+    {% endif %}
+  </div>
+  <div class="ds-card">
+    <div class="ds-card-title">Projetos</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      {% for p in projects %}
+      <a href="/designer/{{ p.id }}" style="display:inline-flex;align-items:center;gap:6px;
+         padding:6px 12px;background:#f6f9ff;border:1px solid var(--ds-border);border-radius:5px;
+         text-decoration:none;color:var(--ds-primary);font-size:.83rem;">
+        <i class="bi bi-layout-wtf"></i> {{ p.name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

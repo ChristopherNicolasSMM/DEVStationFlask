@@ -1,43 +1,46 @@
 """
-DevStation Builder — Entry Point
-=================================
-Inicializa o Flask, registra os Blueprints (controllers) e
-garante a criação das tabelas no banco na primeira execução.
+app.py — Application Factory v3.0
+====================================
+Cria e configura a aplicação Flask com todos os blueprints,
+modelos, seed de transações e descoberta de plugins.
 """
 
 from flask import Flask
-from config import Config
 from models import db
-from controllers import register_blueprints
+from config import Config
 
 
-def create_app(config_class=Config) -> Flask:
+def create_app(test_config: dict = None) -> Flask:
     """
-    Application Factory Pattern.
-    Permite instanciar a app com configurações diferentes
-    (produção, teste, desenvolvimento).
-    """
-    app = Flask(
-        __name__,
-        template_folder="views",      # camada VIEW em /views/
-        static_folder="static",
-    )
-    app.config.from_object(config_class)
+    Fábrica da aplicação Flask.
 
-    # ── Inicializa extensões ──────────────────────────────────────
+    Args:
+        test_config: dicionário de overrides de configuração para testes.
+    """
+    app = Flask(__name__, template_folder="views", static_folder="static")
+    app.config.from_object(Config)
+
+    if test_config:
+        app.config.update(test_config)
+
+    # ── Banco de Dados ────────────────────────────────────────────
     db.init_app(app)
-
-    # ── Registra todos os Blueprints (Controllers) ────────────────
-    register_blueprints(app)
-
-    # ── Cria tabelas se não existirem ─────────────────────────────
     with app.app_context():
         db.create_all()
+
+    # ── Blueprints ────────────────────────────────────────────────
+    from controllers import register_blueprints
+    register_blueprints(app)
+
+    # ── Seed inicial de transações DS_* ───────────────────────────
+    with app.app_context():
+        from transactions.registry import seed_transactions, discover_plugins
+        seed_transactions(app)
+        discover_plugins(app)
 
     return app
 
 
-# Ponto de entrada direto
 if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True, port=5000)
+    application = create_app()
+    application.run(debug=True, port=5000)

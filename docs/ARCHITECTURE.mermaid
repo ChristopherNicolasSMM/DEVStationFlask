@@ -1,0 +1,174 @@
+```mermaid
+C4Container
+  title DevStation Builder v3.0 — Arquitetura de Containers
+
+  Person(dev, "Desenvolvedor", "Usa o Designer, cria projetos e OData bindings")
+
+  System_Boundary(dsb, "DevStation Builder v3.0") {
+
+    Container(flask, "Flask App", "Python/Flask", "Application Factory, Blueprints, Jinja2")
+
+    Container(models, "Models", "SQLAlchemy", "Project, Page, Component, Menu,\nODataConnection, PageVersion,\nVersionBackup, Transaction,\nPlugin, Addon, AddonLog, BuildLog")
+
+    Container(odata_mod, "OData Module", "Python", "ConnectionManager, ScreenGenerator\nCache de $metadata.json (TTL 5min)")
+
+    Container(versioning, "Versioning Module", "Python", "Snapshot, DiffEngine\nBackup .dsk (ZIP renomeado)")
+
+    Container(tx_registry, "Transaction Registry", "Python", "Seed DS_*, Discover Plugins\nLoad active plugins only")
+
+    Container(build, "Build Pipeline", "Python/subprocess", "pytest runner assíncrono\nZIP de distribuição")
+
+    ContainerDb(sqlite, "SQLite", "SQLAlchemy", "Banco principal: projetos,\nversões, backups, logs, transações")
+
+    Container(frontend, "Frontend", "HTML/JS/Bootstrap Icons", "base.html (tx nav global)\nDesigner (canvas drag&drop)\nTransaction Nav (launchpad)\nOData Panel, Version Panel")
+  }
+
+  System_Ext(odata_server, "Servidor OData V4", "Qualquer servidor compatível\ncom OData V4 + $metadata.json")
+
+  Rel(dev, frontend, "Acessa via browser", "HTTP")
+  Rel(frontend, flask, "API calls", "JSON REST")
+  Rel(flask, models, "CRUD", "SQLAlchemy ORM")
+  Rel(flask, odata_mod, "Conecta e gera telas", "Python")
+  Rel(flask, versioning, "Cria/restaura versões", "Python")
+  Rel(flask, tx_registry, "Seed e descoberta", "Python")
+  Rel(flask, build, "Pipeline de testes", "Python/subprocess")
+  Rel(models, sqlite, "Persiste dados", "SQL")
+  Rel(odata_mod, odata_server, "Busca metadata e dados", "HTTP/OData V4")
+  Rel(versioning, sqlite, "Persiste versões e backups", "SQL")
+  Rel(tx_registry, sqlite, "Registra transações e plugins", "SQL")
+```
+
+```mermaid
+erDiagram
+  Project ||--o{ Page          : "tem"
+  Project ||--o{ Menu          : "tem"
+  Project ||--o{ ODataConnection : "tem"
+  Page    ||--o{ Component     : "contém"
+  Page    ||--o{ PageVersion   : "versionada por"
+  Project ||--o{ PageVersion   : "versionada por"
+  Project ||--o{ VersionBackup : "backups de"
+  PageVersion ||--o| VersionBackup : "gera ao deletar"
+
+  Project {
+    int id PK
+    string name
+    int canvas_w
+    int canvas_h
+    string canvas_bg
+  }
+
+  Page {
+    int id PK
+    int project_id FK
+    string name
+    string slug
+    bool is_home
+    int order
+  }
+
+  Component {
+    int id PK
+    int page_id FK
+    string type
+    string name
+    int x
+    int y
+    int width
+    int height
+    int z_index
+    json properties
+    json events
+    json rules
+  }
+
+  ODataConnection {
+    int id PK
+    int project_id FK
+    string name
+    string base_url
+    string auth_type
+    json metadata_cache
+    datetime metadata_cached_at
+  }
+
+  PageVersion {
+    int id PK
+    int page_id FK
+    int project_id FK
+    string version_label
+    bool is_auto
+    json tags
+    json snapshot
+    bool purge_suggested
+    bool deleted
+    string backup_path
+  }
+
+  VersionBackup {
+    int id PK
+    int project_id FK
+    int page_id
+    int version_id
+    string backup_path
+    string backup_name
+    string reason
+    int size_bytes
+  }
+
+  Transaction {
+    int id PK
+    string code UK
+    string label
+    string group
+    string route
+    string min_profile
+    bool is_active
+    bool is_standard
+    string plugin_code
+  }
+
+  Plugin {
+    int id PK
+    string code UK
+    string name
+    string version
+    string folder_path
+    string entry_point
+    json transaction_codes
+    bool is_active
+    bool is_installed
+  }
+
+  Addon {
+    int id PK
+    string code UK
+    string name
+    string addon_type
+    string status
+    bool is_active
+    json manifest
+    string package_path
+    string install_path
+  }
+
+  AddonLog {
+    int id PK
+    int addon_id FK
+    string addon_code
+    string action
+    string status
+    string detail
+  }
+
+  BuildLog {
+    int id PK
+    string version
+    string status
+    int tests_total
+    int tests_passed
+    int tests_failed
+    string test_output
+    string zip_path
+    string zip_name
+  }
+```

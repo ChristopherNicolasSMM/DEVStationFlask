@@ -1,340 +1,364 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Designer — {{ project.name }}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DS_DESIGNER — {{ project.name }}</title>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --ds-accent: #4154f1; --ds-primary: #012970; --ds-border: #2a2f4a;
+      --ds-panel-bg: #1a1e2e; --ds-panel-text: #c8cfea;
+      --ds-toolbar-h: 48px; --ds-left-w: 240px; --ds-right-w: 270px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #12151f; color: var(--ds-panel-text); font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Bootstrap CSS (local) -->
-  <link href="/static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons (local) -->
-  <link href="/static/assets/vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="/static/assets/css/style.css" rel="stylesheet">
-  <link href="/static/css/designer.css" rel="stylesheet">
+    /* ── Toolbar ───────────────────────────────────────── */
+    .dsd-toolbar {
+      height: var(--ds-toolbar-h); background: #0d1020; border-bottom: 1px solid var(--ds-border);
+      display: flex; align-items: center; padding: 0 12px; gap: 8px; position: fixed;
+      top: 0; left: 0; right: 0; z-index: 100;
+    }
+    .dsd-toolbar .brand { font-size: .85rem; font-weight: 700; color: var(--ds-accent);
+                           white-space: nowrap; margin-right: 8px; }
+    .dsd-toolbar .project-name { color: #8899cc; font-size: .82rem; margin: 0 8px; cursor: pointer; }
+    .dsd-toolbar .project-name:hover { color: #fff; }
+    .dsd-sep { width: 1px; height: 24px; background: var(--ds-border); margin: 0 4px; }
+    .tb-btn {
+      background: none; border: 1px solid transparent; color: var(--ds-panel-text);
+      padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: .85rem;
+      display: flex; align-items: center; gap: 4px; transition: all .15s;
+    }
+    .tb-btn:hover { background: #1e2340; border-color: var(--ds-border); }
+    .tb-btn.primary { background: var(--ds-accent); border-color: var(--ds-accent); color: #fff; }
+    .tb-btn.primary:hover { opacity: .88; }
+    .tb-status { font-size: .75rem; color: #5566aa; margin-left: auto; }
+    .tb-zoom { display: flex; align-items: center; gap: 4px; font-size: .78rem; color: #778; }
+    input.tb-num {
+      background: #0d1020; border: 1px solid var(--ds-border); color: #ccc;
+      padding: 3px 6px; border-radius: 3px; width: 60px; font-size: .78rem; text-align: center;
+    }
+
+    /* ── Layout ────────────────────────────────────────── */
+    .dsd-layout {
+      display: flex; height: calc(100vh - var(--ds-toolbar-h));
+      margin-top: var(--ds-toolbar-h);
+    }
+
+    /* ── Left panel ────────────────────────────────────── */
+    .dsd-left {
+      width: var(--ds-left-w); background: var(--ds-panel-bg);
+      border-right: 1px solid var(--ds-border); display: flex; flex-direction: column;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .dsd-panel-tabs {
+      display: flex; background: #11142a; border-bottom: 1px solid var(--ds-border);
+    }
+    .ptab {
+      flex: 1; padding: 8px 4px; background: none; border: none; color: #667;
+      cursor: pointer; font-size: .82rem; border-bottom: 2px solid transparent;
+      transition: all .15s; text-align: center;
+    }
+    .ptab:hover { color: var(--ds-panel-text); }
+    .ptab.active { color: var(--ds-accent); border-bottom-color: var(--ds-accent); }
+    .panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .panel-content::-webkit-scrollbar { width: 4px; }
+    .panel-content::-webkit-scrollbar-thumb { background: #2a2f4a; border-radius: 2px; }
+
+    /* Component palette */
+    .palette-search { padding: 8px; border-bottom: 1px solid var(--ds-border); }
+    .palette-search input {
+      width: 100%; background: #0d1020; border: 1px solid var(--ds-border);
+      color: #ccc; padding: 5px 8px; border-radius: 4px; font-size: .8rem; outline: none;
+    }
+    .pal-group-title {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #556; padding: 8px 10px 4px;
+    }
+    .pal-item {
+      display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+      cursor: grab; border-radius: 4px; margin: 1px 6px; transition: background .1s;
+      font-size: .82rem;
+    }
+    .pal-item:hover { background: #1e2340; }
+    .pal-item i { color: var(--ds-accent); font-size: 1rem; min-width: 18px; }
+
+    /* Pages list */
+    .page-item {
+      display: flex; align-items: center; padding: 8px 10px;
+      cursor: pointer; border-radius: 4px; margin: 2px 6px;
+      transition: background .1s; font-size: .83rem; gap: 7px;
+    }
+    .page-item:hover { background: #1e2340; }
+    .page-item.active { background: #1e2a50; color: #8aadff; }
+    .page-item i { color: #667; font-size: .9rem; }
+
+    /* OData panel */
+    .odata-conn-item { padding: 8px 10px; border-bottom: 1px solid #1e2340; }
+    .odata-entity-item { padding: 6px 10px; border-bottom: 1px solid #1e2340; font-size: .8rem; }
+
+    /* Version timeline */
+    .version-item { padding: 6px 10px; border-bottom: 1px solid #1e2340; font-size: .78rem; }
+
+    /* ── Canvas ────────────────────────────────────────── */
+    .dsd-canvas-area {
+      flex: 1; overflow: auto; background: #0d1020; position: relative;
+    }
+    .canvas-board {
+      position: relative; background: #fff; margin: 24px auto;
+      box-shadow: 0 4px 40px rgba(0,0,0,.6); border-radius: 2px;
+    }
+    .canvas-hint {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #ccc; font-size: .9rem; pointer-events: none; opacity: .35;
+    }
+    .canvas-hint i { font-size: 2.5rem; margin-bottom: 8px; }
+
+    /* ── Right panel ───────────────────────────────────── */
+    .dsd-right {
+      width: var(--ds-right-w); background: var(--ds-panel-bg);
+      border-left: 1px solid var(--ds-border); display: flex; flex-direction: column;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .props-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 200px; color: #445; font-size: .82rem; gap: 8px;
+    }
+    .props-section { padding: 10px; border-bottom: 1px solid var(--ds-border); }
+    .props-section-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .5px;
+                            color: #667; margin-bottom: 8px; font-weight: 600; }
+    .props-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .props-col { flex: 1; }
+    .props-label { font-size: .72rem; color: #889; display: block; margin-bottom: 3px; }
+    .props-input {
+      width: 100%; background: #0d1020; border: 1px solid var(--ds-border);
+      color: #ccc; padding: 5px 7px; border-radius: 3px; font-size: .8rem; outline: none;
+    }
+    .props-input:focus { border-color: var(--ds-accent); }
+
+    /* Zoom overlay */
+    .zoom-hud {
+      position: fixed; bottom: 16px; left: calc(var(--ds-left-w) + 16px);
+      display: flex; align-items: center; gap: 4px;
+      background: #0d1020cc; border: 1px solid var(--ds-border);
+      border-radius: 20px; padding: 4px 10px; font-size: .78rem; color: #889;
+    }
+    .zoom-hud button { background: none; border: none; color: #889; cursor: pointer; font-size: 1rem; }
+    .zoom-hud button:hover { color: #fff; }
+  </style>
 </head>
-<body class="designer-body">
+<body>
 
-<!-- ═══════════════════════ MENUBAR ═══════════════════════ -->
-<nav class="menubar" id="menubar">
-  <div class="menubar-brand">
-    <i class="bi bi-layout-wtf text-primary"></i>
-    <span>DevStation</span>
-  </div>
+<!-- ═══ TOOLBAR ═══════════════════════════════════════════════ -->
+<div class="dsd-toolbar">
+  <a href="/" class="tb-btn" title="Dashboard"><i class="bi bi-house"></i></a>
+  <div class="brand"><i class="bi bi-diagram-3-fill me-1"></i>DS_DESIGNER</div>
+  <div class="dsd-sep"></div>
+  <span class="project-name" id="lblProjectName"
+        title="Clique para renomear" onclick="renameProject()">
+    {{ project.name }}
+  </span>
+  <div class="dsd-sep"></div>
 
-  <!-- Menu items from server-side config -->
-  {% for key, menu in menu_config.items() %}
-  <div class="menubar-item dropdown">
-    <button class="menubar-btn dropdown-toggle" data-bs-toggle="dropdown">
-      {{ menu.get('label', key) }}
-    </button>
-    <ul class="dropdown-menu dropdown-menu-dark">
-      {% for item in menu.get('items', []) %}
-        {% if item.get('separator') %}
-          <li><hr class="dropdown-divider"></li>
-        {% else %}
-          <li>
-            <a class="dropdown-item d-flex justify-content-between align-items-center"
-               href="#" data-action="{{ item.get('action','') }}">
-              <span>{{ item.label }}</span>
-              {% if item.get('shortcut') %}
-                <kbd class="kbd-hint">{{ item.shortcut }}</kbd>
-              {% endif %}
-            </a>
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  </div>
-  {% endfor %}
+  <!-- Toolbar ações -->
+  <button class="tb-btn" id="btnUndo" title="Desfazer (Ctrl+Z)"><i class="bi bi-arrow-counterclockwise"></i></button>
+  <button class="tb-btn" id="btnRedo" title="Refazer (Ctrl+Y)"><i class="bi bi-arrow-clockwise"></i></button>
+  <div class="dsd-sep"></div>
+  <button class="tb-btn" id="btnGrid" title="Grade" data-active="1"><i class="bi bi-grid-3x3"></i></button>
+  <button class="tb-btn" id="btnSnap" title="Snap" data-active="1"><i class="bi bi-magnet"></i></button>
+  <div class="dsd-sep"></div>
 
-  <!-- Toolbar rápida -->
-  <div class="menubar-toolbar ms-2 d-flex align-items-center gap-1">
-    <button class="tb-btn" id="btnUndo"  title="Desfazer Ctrl+Z"><i class="bi bi-arrow-counterclockwise"></i></button>
-    <button class="tb-btn" id="btnRedo"  title="Refazer Ctrl+Y"><i class="bi bi-arrow-clockwise"></i></button>
-    <div class="vr mx-1"></div>
-    <button class="tb-btn" id="btnGrid"  title="Grade" data-active="true"><i class="bi bi-grid-3x3"></i></button>
-    <button class="tb-btn" id="btnSnap"  title="Snap" data-active="true"><i class="bi bi-magnet"></i></button>
-    <div class="vr mx-1"></div>
-    <!-- Canvas size -->
-    <div class="d-flex align-items-center gap-1" style="font-size:11px;">
-      <span class="text-muted">W</span>
-      <input type="number" id="inputCanvasW" class="tb-input" value="{{ current_page.canvas_w or project.canvas_w }}" min="320" step="10">
-      <span class="text-muted">H</span>
-      <input type="number" id="inputCanvasH" class="tb-input" value="{{ current_page.canvas_h or project.canvas_h }}" min="200" step="10">
-      <input type="color" id="inputCanvasBg" value="{{ current_page.canvas_bg or project.canvas_bg }}"
-             title="Cor de fundo" style="width:26px;height:26px;padding:1px;border-radius:3px;border:1px solid #555;cursor:pointer;">
-    </div>
-  </div>
+  <!-- Canvas size -->
+  <span style="font-size:.72rem;color:#556;">W</span>
+  <input type="number" class="tb-num" id="inputCanvasW" value="{{ current_page.canvas_w or project.canvas_w }}" min="320" step="10">
+  <span style="font-size:.72rem;color:#556;">H</span>
+  <input type="number" class="tb-num" id="inputCanvasH" value="{{ current_page.canvas_h or project.canvas_h }}" min="200" step="10">
+  <input type="color" id="inputCanvasBg" value="{{ current_page.canvas_bg or project.canvas_bg }}"
+         title="Cor de fundo" style="width:26px;height:26px;padding:1px;border-radius:3px;border:1px solid #333;cursor:pointer;">
+  <div class="dsd-sep"></div>
 
-  <!-- Direita -->
-  <div class="ms-auto d-flex align-items-center gap-2 pe-3">
-    <span id="statusSave" class="text-muted" style="font-size:11px;"></span>
-    <!-- Zoom -->
-    <div class="d-flex align-items-center gap-1">
-      <button class="tb-btn" id="btnZoomOut"><i class="bi bi-dash"></i></button>
-      <span id="zoomLabel" class="text-muted" style="font-size:11px;min-width:36px;text-align:center;">100%</span>
-      <button class="tb-btn" id="btnZoomIn"><i class="bi bi-plus"></i></button>
-      <button class="tb-btn" id="btnZoomReset">⊞</button>
-    </div>
-    <div class="vr"></div>
-    <!-- Projeto / página -->
-    <span id="lblNome" class="fw-semibold" style="color:#c8d4ff;font-size:13px;cursor:pointer;"
-          title="Renomear projeto">{{ project.name }}</span>
-    <div class="vr"></div>
-    <button class="btn btn-sm btn-outline-warning" id="btnTemplates" title="Galeria de Templates">
-      <i class="bi bi-grid-1x2 me-1"></i>Templates
-    </button>
-    <button class="btn btn-sm btn-outline-info" id="btnPreview" title="Preview F5">
-      <i class="bi bi-eye me-1"></i>Preview
-    </button>
-    <button class="btn btn-sm btn-outline-success" id="btnExport">
-      <i class="bi bi-download me-1"></i>Export ZIP
-    </button>
-    <button class="btn btn-sm btn-primary" id="btnSave" title="Salvar Ctrl+S">
-      <i class="bi bi-floppy me-1"></i>Salvar
-    </button>
-  </div>
-</nav>
+  <span class="tb-status" id="tbStatus"></span>
 
-<!-- ═══════════════════════ LAYOUT ════════════════════════ -->
-<div class="designer-layout">
+  <button class="tb-btn" id="btnPreview" title="Preview (F5)">
+    <i class="bi bi-eye me-1"></i>Preview
+  </button>
+  <button class="tb-btn" id="btnExportZip" title="Exportar ZIP">
+    <i class="bi bi-download me-1"></i>ZIP
+  </button>
+  <button class="tb-btn primary" id="btnSave" title="Salvar (Ctrl+S)">
+    <i class="bi bi-floppy me-1"></i>Salvar
+  </button>
+</div>
 
-  <!-- ── LEFT PANEL ──────────────────────────────────────── -->
-  <aside class="left-panel" id="leftPanel">
+<!-- ═══ LAYOUT ════════════════════════════════════════════════ -->
+<div class="dsd-layout">
 
-    <!-- Abas do painel -->
-    <div class="panel-tabs">
-      <button class="ptab active" data-tab="tab-palette" title="Componentes"><i class="bi bi-grid-3x3-gap"></i></button>
-      <button class="ptab" data-tab="tab-pages"   title="Páginas"><i class="bi bi-files"></i></button>
-      <button class="ptab" data-tab="tab-layers"  title="Layers"><i class="bi bi-stack"></i></button>
-      <button class="ptab" data-tab="tab-outline" title="Outline"><i class="bi bi-list-nested"></i></button>
+  <!-- ── LEFT PANEL ──────────────────────────────────────────── -->
+  <aside class="dsd-left">
+    <div class="dsd-panel-tabs">
+      <button class="ptab active" data-tab="lp-palette"  title="Componentes"><i class="bi bi-grid-3x3-gap"></i></button>
+      <button class="ptab"        data-tab="lp-pages"    title="Páginas"><i class="bi bi-files"></i></button>
+      <button class="ptab"        data-tab="lp-outline"  title="Outline"><i class="bi bi-list-nested"></i></button>
+      <button class="ptab"        data-tab="lp-odata"    title="OData"><i class="bi bi-cloud-arrow-down"></i></button>
+      <button class="ptab"        data-tab="lp-history"  title="Histórico"><i class="bi bi-clock-history"></i></button>
     </div>
 
-    <!-- Tab: Paleta de Componentes -->
-    <div id="tab-palette" class="panel-tab-content active">
-      <div class="panel-search">
-        <input type="text" id="paletteSearch" class="form-control form-control-sm" placeholder="Buscar...">
+    <!-- Paleta -->
+    <div id="lp-palette" class="panel-content">
+      <div class="palette-search">
+        <input type="text" id="paletteSearch" placeholder="Buscar componente…">
       </div>
-      <div id="paletteContent" class="palette-content">
-        {% for group in registry %}
-        <div class="palette-group" data-group="{{ group['group'] }}">
-          <div class="palette-group-title">{{ group['group'] }}</div>
-          {% for comp in group['items'] %}
-          <div class="palette-item" draggable="true"
-               data-type="{{ comp['type'] }}"
-               data-label="{{ comp['label'] }}"
-               data-w="{{ comp['default_size']['width'] }}"
-               data-h="{{ comp['default_size']['height'] }}">
-            <i class="bi {{ comp['icon'] }}"></i>
-            <span>{{ comp['label'] }}</span>
-          </div>
-          {% endfor %}
+      <div id="paletteList">
+        {% for group in [
+          ('Entrada',      [('button','Botão','bi-app'),('textbox','Campo Texto','bi-input-cursor-text'),
+                            ('textarea','Textarea','bi-textarea'),('numberbox','Número','bi-123'),
+                            ('combobox','ComboBox','bi-menu-button-wide'),('checkbox','CheckBox','bi-check-square'),
+                            ('datepicker','Data','bi-calendar3'),('switch','Switch','bi-toggle-on')]),
+          ('Visualização', [('label','Texto','bi-paragraph'),('heading','Título','bi-type-h1'),
+                            ('image','Imagem','bi-image'),('icon','Ícone','bi-star'),
+                            ('badge','Badge','bi-tag'),('progressbar','Progress','bi-bar-chart-steps'),
+                            ('statusbar','Status Bar','bi-info-circle'),('separator','Divisor','bi-hr')]),
+          ('Container',    [('panel','Painel','bi-bounding-box'),('card','Card','bi-card-text'),
+                            ('groupbox','GroupBox','bi-collection'),('tabs','Tabs','bi-folder-symlink'),
+                            ('accordion','Accordion','bi-layout-accordion-collapsed')]),
+          ('Dados',        [('datagrid','DataGrid','bi-table'),('chart','Gráfico','bi-bar-chart'),
+                            ('pagination','Paginação','bi-arrow-left-right')]),
+          ('Feedback',     [('alert','Alert','bi-info-circle'),('modal','Modal','bi-window-stack')]),
+          ('Navegação',    [('navbar','Navbar','bi-layout-text-sidebar-reverse'),
+                            ('breadcrumb','Breadcrumb','bi-chevron-right'),
+                            ('stepper','Stepper','bi-list-ol')]),
+          ('Tempo',        [('timer','Timer','bi-alarm'),('countdown','Countdown','bi-stopwatch')]),
+        ] %}
+        <div class="pal-group-title">{{ group[0] }}</div>
+        {% for type, label, icon in group[1] %}
+        <div class="pal-item" draggable="true"
+             data-type="{{ type }}" data-label="{{ label }}">
+          <i class="bi {{ icon }}"></i>
+          <span>{{ label }}</span>
         </div>
+        {% endfor %}
         {% endfor %}
       </div>
     </div>
 
-    <!-- Tab: Páginas -->
-    <div id="tab-pages" class="panel-tab-content">
-      <div class="px-2 py-2 border-bottom d-flex justify-content-between align-items-center">
-        <small class="fw-semibold text-muted">PÁGINAS</small>
-        <div class="d-flex gap-1">
-          <button class="btn btn-xs btn-outline-secondary" id="btnDupPage" title="Duplicar Página">
-            <i class="bi bi-copy"></i>
-          </button>
-          <button class="btn btn-xs btn-outline-primary" id="btnNewPage" title="Nova Página">
-            <i class="bi bi-plus"></i>
-          </button>
-        </div>
+    <!-- Páginas -->
+    <div id="lp-pages" class="panel-content" style="display:none;">
+      <div style="padding:8px 10px;border-bottom:1px solid var(--ds-border);
+                  display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:#667;">Páginas</span>
+        <button class="tb-btn" id="btnNewPage" title="Nova Página" style="padding:3px 7px;">
+          <i class="bi bi-plus"></i>
+        </button>
       </div>
       <div id="pagesList">
-        {% for pg in all_pages %}
+        {% for pg in pages %}
         <div class="page-item {{ 'active' if pg.id == current_page.id else '' }}"
-             data-pgid="{{ pg.id }}" data-pid="{{ project.id }}">
-          <i class="bi bi-file-earmark-text"></i>
-          <span class="page-name">{{ pg.name }}</span>
-          {% if pg.is_home %}<i class="bi bi-house-fill text-primary ms-auto" title="Página inicial"></i>{% endif %}
-          {% if not pg.is_home %}
-          <button class="btn-page-del" data-pgid="{{ pg.id }}" title="Deletar">
-            <i class="bi bi-trash"></i>
-          </button>
-          {% endif %}
+             data-pgid="{{ pg.id }}">
+          <i class="bi {{ 'bi-house-fill' if pg.is_home else 'bi-file-earmark-text' }}"></i>
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ pg.name }}</span>
         </div>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Tab: Layers Panel -->
-    <div id="tab-layers" class="panel-tab-content">
-      <div class="px-2 py-2 border-bottom d-flex justify-content-between align-items-center">
-        <small class="fw-semibold text-muted">CAMADAS</small>
-        <div class="d-flex gap-1">
-          <button class="btn btn-xs btn-outline-secondary" id="btnLayersSelAll" title="Selecionar todos">
-            <i class="bi bi-check2-all"></i>
-          </button>
-          <button class="btn btn-xs btn-outline-danger" id="btnLayersDelSel" title="Deletar selecionados" style="display:none;">
-            <i class="bi bi-trash"></i>
-          </button>
-        </div>
-      </div>
-      <!-- Multi-select info bar -->
-      <div id="multiSelectBar" class="multi-select-bar" style="display:none;">
-        <span id="multiSelectCount" class="fw-semibold"></span>
-        <div class="d-flex gap-1 ms-auto">
-          <button class="btn btn-xs btn-outline-light" id="btnMultiDup"  title="Duplicar seleção"><i class="bi bi-copy"></i></button>
-          <button class="btn btn-xs btn-outline-light" id="btnMultiAlignL" title="Alinhar esquerda"><i class="bi bi-align-start"></i></button>
-          <button class="btn btn-xs btn-outline-light" id="btnMultiAlignC" title="Centralizar"><i class="bi bi-align-center"></i></button>
-          <button class="btn btn-xs btn-outline-light" id="btnMultiAlignR" title="Alinhar direita"><i class="bi bi-align-end"></i></button>
-          <button class="btn btn-xs btn-outline-danger" id="btnMultiDel" title="Deletar seleção"><i class="bi bi-trash"></i></button>
-        </div>
-      </div>
-      <div id="layersList" class="layers-list"></div>
+    <!-- Outline -->
+    <div id="lp-outline" class="panel-content" style="display:none;">
+      <div style="padding:8px 10px;border-bottom:1px solid var(--ds-border);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:#667;">Outline</div>
+      <div id="outlineList" style="padding:8px;"></div>
     </div>
 
-    <!-- Tab: Outline (árvore de componentes) -->
-    <div id="tab-outline" class="panel-tab-content">
-      <div class="px-2 py-2 border-bottom">
-        <small class="fw-semibold text-muted">OUTLINE</small>
+    <!-- OData Panel -->
+    <div id="lp-odata" class="panel-content" style="display:none;">
+      <div style="padding:8px 10px;border-bottom:1px solid var(--ds-border);
+                  display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:.72rem;text-transform:uppercase;color:#667;">Conexões OData</span>
+        <button class="tb-btn" onclick="ODataPanel.openNewConnModal()" style="padding:3px 7px;">
+          <i class="bi bi-plus"></i>
+        </button>
       </div>
-      <div id="outlineList" class="outline-list"></div>
+      <div id="odataConnectionList"><div class="text-muted" style="padding:10px;font-size:.78rem;">Carregando…</div></div>
+      <div style="padding:8px 10px;border-top:1px solid var(--ds-border);font-size:.72rem;text-transform:uppercase;color:#667;margin-top:8px;">Entidades</div>
+      <div id="odataEntityList"></div>
+    </div>
+
+    <!-- Histórico -->
+    <div id="lp-history" class="panel-content" style="display:none;">
+      <div id="versionTimeline"><div style="padding:10px;font-size:.78rem;color:#556;">Carregando…</div></div>
     </div>
   </aside>
 
-  <!-- ── CANVAS AREA ─────────────────────────────────────── -->
-  <main class="canvas-area" id="canvasArea">
-    <div class="canvas-scroll-wrap" id="canvasScrollWrap">
-      <div id="canvas" class="canvas-board"
-           style="width:{{ current_page.canvas_w or project.canvas_w }}px;
-                  min-height:{{ current_page.canvas_h or project.canvas_h }}px;
-                  background:{{ current_page.canvas_bg or project.canvas_bg }};">
-        <!-- Hint quando vazio -->
-        <div id="canvasHint" class="canvas-hint">
-          <i class="bi bi-cursor-fill d-block mb-2"></i>
-          Arraste componentes da paleta para cá
-        </div>
-        <!-- Rubber-band selection overlay -->
-        <div id="rubberBand" class="rubber-band" style="display:none;"></div>
+  <!-- ── CANVAS ──────────────────────────────────────────────── -->
+  <main class="dsd-canvas-area" id="canvasArea">
+    <div id="canvas" class="canvas-board"
+         style="width:{{ current_page.canvas_w or project.canvas_w }}px;
+                min-height:{{ current_page.canvas_h or project.canvas_h }}px;
+                background:{{ current_page.canvas_bg or project.canvas_bg }};">
+      <div class="canvas-hint" id="canvasHint">
+        <i class="bi bi-cursor-fill"></i>
+        Arraste componentes da paleta para cá
       </div>
     </div>
-    <!-- Selection info badge -->
-    <div id="selectionBadge" class="selection-badge" style="display:none;"></div>
   </main>
 
-  <!-- ── RIGHT PANEL ─────────────────────────────────────── -->
-  <aside class="right-panel" id="rightPanel">
-
-    <!-- Abas do painel direito -->
-    <div class="panel-tabs">
-      <button class="ptab active" data-tab="rp-props"   title="Propriedades"><i class="bi bi-sliders"></i></button>
-      <button class="ptab"        data-tab="rp-events"  title="Eventos"><i class="bi bi-lightning-charge"></i></button>
-      <button class="ptab"        data-tab="rp-rules"   title="Regras"><i class="bi bi-funnel"></i></button>
+  <!-- ── RIGHT PANEL ─────────────────────────────────────────── -->
+  <aside class="dsd-right">
+    <div class="dsd-panel-tabs">
+      <button class="ptab active" data-rtab="rp-props"  title="Propriedades"><i class="bi bi-sliders"></i></button>
+      <button class="ptab"        data-rtab="rp-events" title="Eventos"><i class="bi bi-lightning-charge"></i></button>
+      <button class="ptab"        data-rtab="rp-rules"  title="Regras"><i class="bi bi-funnel"></i></button>
+      <button class="ptab"        data-rtab="rp-odata"  title="Dados OData"><i class="bi bi-database"></i></button>
     </div>
 
-    <!-- ── Propriedades ── -->
-    <div id="rp-props" class="panel-tab-content active">
-      <div id="propsEmpty" class="panel-empty">
-        <i class="bi bi-cursor d-block mb-2"></i>
+    <!-- Propriedades -->
+    <div id="rp-props" class="panel-content">
+      <div class="props-empty" id="propsEmpty">
+        <i class="bi bi-cursor" style="font-size:2rem;"></i>
         Selecione um componente
       </div>
       <div id="propsForm" style="display:none;">
-        <!-- Nome / tipo -->
         <div class="props-section">
           <div class="props-row">
             <div class="props-col">
               <label class="props-label">Nome</label>
-              <input type="text" id="propName" class="form-control form-control-sm">
+              <input type="text" id="propName" class="props-input">
             </div>
             <div class="props-col">
               <label class="props-label">Tipo</label>
-              <input type="text" id="propType" class="form-control form-control-sm" readonly>
+              <input type="text" id="propType" class="props-input" readonly>
             </div>
           </div>
         </div>
-
-        <!-- Posição & Tamanho -->
         <div class="props-section">
           <div class="props-section-title">Layout</div>
           <div class="props-row">
-            <div class="props-col"><label class="props-label">X</label>
-              <input type="number" id="propX" class="form-control form-control-sm"></div>
-            <div class="props-col"><label class="props-label">Y</label>
-              <input type="number" id="propY" class="form-control form-control-sm"></div>
+            <div class="props-col"><label class="props-label">X</label><input type="number" id="propX" class="props-input"></div>
+            <div class="props-col"><label class="props-label">Y</label><input type="number" id="propY" class="props-input"></div>
           </div>
           <div class="props-row">
-            <div class="props-col"><label class="props-label">Largura</label>
-              <input type="number" id="propW" class="form-control form-control-sm"></div>
-            <div class="props-col"><label class="props-label">Altura</label>
-              <input type="number" id="propH" class="form-control form-control-sm"></div>
+            <div class="props-col"><label class="props-label">Largura</label><input type="number" id="propW" class="props-input"></div>
+            <div class="props-col"><label class="props-label">Altura</label><input type="number" id="propH" class="props-input"></div>
           </div>
           <div class="props-row">
-            <div class="props-col"><label class="props-label">Z-Index</label>
-              <input type="number" id="propZ" class="form-control form-control-sm" min="0"></div>
-            <div class="props-col align-self-end d-flex gap-1">
-              <button class="btn btn-xs btn-outline-secondary flex-fill" id="btnZUp" title="Trazer à frente">
-                <i class="bi bi-arrow-up"></i>
-              </button>
-              <button class="btn btn-xs btn-outline-secondary flex-fill" id="btnZDown" title="Enviar atrás">
-                <i class="bi bi-arrow-down"></i>
-              </button>
+            <div class="props-col"><label class="props-label">Z-Index</label><input type="number" id="propZ" class="props-input" min="0"></div>
+            <div class="props-col d-flex" style="gap:4px;align-items:flex-end;">
+              <button class="tb-btn" id="btnZUp" style="flex:1;justify-content:center;"><i class="bi bi-arrow-up"></i></button>
+              <button class="tb-btn" id="btnZDown" style="flex:1;justify-content:center;"><i class="bi bi-arrow-down"></i></button>
             </div>
           </div>
         </div>
-
-        <!-- Propriedades dinâmicas do componente -->
         <div class="props-section" id="sectionDynamic">
           <div class="props-section-title">Propriedades</div>
           <div id="dynamicProps"></div>
         </div>
-
-        <!-- Tipografia -->
-        <div class="props-section" id="sectionTypo" style="display:none;">
-          <div class="props-section-title">Tipografia</div>
-          <div class="props-row">
-            <div class="props-col">
-              <label class="props-label">Tamanho px</label>
-              <input type="number" id="propFontSize" class="form-control form-control-sm" min="8" max="96">
-            </div>
-            <div class="props-col">
-              <label class="props-label">Cor texto</label>
-              <input type="color" id="propTextColor" class="form-control form-control-sm form-control-color w-100">
-            </div>
-          </div>
-          <div class="d-flex gap-2 mt-2">
-            <button class="btn btn-xs btn-outline-secondary flex-fill" id="propBold" title="Negrito"><i class="bi bi-type-bold"></i></button>
-            <button class="btn btn-xs btn-outline-secondary flex-fill" id="propItalic" title="Itálico"><i class="bi bi-type-italic"></i></button>
-            <button class="btn btn-xs btn-outline-secondary flex-fill" data-align="left"   title="Esquerda"><i class="bi bi-text-left"></i></button>
-            <button class="btn btn-xs btn-outline-secondary flex-fill" data-align="center" title="Centro"><i class="bi bi-text-center"></i></button>
-            <button class="btn btn-xs btn-outline-secondary flex-fill" data-align="right"  title="Direita"><i class="bi bi-text-right"></i></button>
-          </div>
-        </div>
-
-        <!-- Visual -->
         <div class="props-section">
-          <div class="props-section-title">Aparência</div>
-          <div class="props-row">
-            <div class="props-col">
-              <label class="props-label">Fundo</label>
-              <input type="color" id="propBgColor" class="form-control form-control-sm form-control-color w-100" value="#4154f1">
-            </div>
-            <div class="props-col">
-              <label class="props-label">Border Radius</label>
-              <input type="number" id="propRadius" class="form-control form-control-sm" min="0" max="50" value="4">
-            </div>
-          </div>
-          <div class="mt-2">
-            <label class="props-label">Classes Bootstrap extras</label>
-            <input type="text" id="propClasses" class="form-control form-control-sm" placeholder="shadow-sm text-center ...">
-          </div>
-        </div>
-
-        <!-- Ações -->
-        <div class="props-section">
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary flex-fill" id="btnDuplicate">
+          <div style="display:flex;gap:6px;">
+            <button class="tb-btn" id="btnDuplicate" style="flex:1;justify-content:center;">
               <i class="bi bi-copy me-1"></i>Duplicar
             </button>
-            <button class="btn btn-sm btn-outline-danger flex-fill" id="btnDelete">
+            <button class="tb-btn" id="btnDelete" style="flex:1;justify-content:center;border-color:#c0392b;color:#c0392b;">
               <i class="bi bi-trash me-1"></i>Deletar
             </button>
           </div>
@@ -342,246 +366,179 @@
       </div>
     </div>
 
-    <!-- ── Eventos ── -->
-    <div id="rp-events" class="panel-tab-content">
-      <div id="eventsEmpty" class="panel-empty">
-        <i class="bi bi-lightning d-block mb-2"></i>
-        Selecione um componente
-      </div>
-      <div id="eventsForm" style="display:none;">
-        <div class="px-2 pt-2 pb-1">
-          <small class="text-muted">Associe ações a eventos do componente selecionado.</small>
-        </div>
-        <div id="eventsList" class="events-list"></div>
-        <div class="px-2 pb-2">
-          <button class="btn btn-sm btn-outline-primary w-100" id="btnAddEvent">
-            <i class="bi bi-plus-lg me-1"></i>Adicionar Evento
-          </button>
+    <!-- Eventos -->
+    <div id="rp-events" class="panel-content" style="display:none;">
+      <div class="props-empty"><i class="bi bi-lightning" style="font-size:2rem;"></i>Selecione um componente</div>
+    </div>
+
+    <!-- Regras -->
+    <div id="rp-rules" class="panel-content" style="display:none;">
+      <div class="props-empty"><i class="bi bi-funnel" style="font-size:2rem;"></i>Selecione um componente</div>
+    </div>
+
+    <!-- OData Binding -->
+    <div id="rp-odata" class="panel-content" style="display:none;">
+      <div class="props-section">
+        <div class="props-section-title">Binding OData</div>
+        <div id="odataBindingContainer">
+          <div class="props-empty"><i class="bi bi-database" style="font-size:2rem;"></i>Selecione um componente</div>
         </div>
       </div>
     </div>
-
-    <!-- ── Regras ── -->
-    <div id="rp-rules" class="panel-tab-content">
-      <div id="rulesEmpty" class="panel-empty">
-        <i class="bi bi-funnel d-block mb-2"></i>
-        Selecione um componente
-      </div>
-      <div id="rulesForm" style="display:none;">
-        <div class="px-2 pt-2 pb-1">
-          <small class="text-muted">Regras de validação, visibilidade e cálculo.</small>
-        </div>
-        <div id="rulesList" class="rules-list"></div>
-        <div class="px-2 pb-2">
-          <button class="btn btn-sm btn-outline-primary w-100" id="btnAddRule">
-            <i class="bi bi-plus-lg me-1"></i>Adicionar Regra
-          </button>
-        </div>
-      </div>
-    </div>
-
   </aside>
 </div>
 
-<!-- ══ CONTEXT MENU ═══════════════════════════════════════ -->
-<div id="ctxMenu" class="ctx-menu" style="display:none;">
-  <div class="ctx-item" data-action="duplicate"><i class="bi bi-copy"></i> Duplicar</div>
-  <div class="ctx-item" data-action="layer_up"><i class="bi bi-arrow-up"></i> Trazer à frente</div>
-  <div class="ctx-item" data-action="layer_dn"><i class="bi bi-arrow-down"></i> Enviar atrás</div>
-  <div class="ctx-item" data-action="align_left"><i class="bi bi-align-start"></i> Alinhar Esquerda</div>
-  <div class="ctx-item" data-action="align_center"><i class="bi bi-align-center"></i> Centralizar</div>
-  <div class="ctx-item" data-action="align_right"><i class="bi bi-align-end"></i> Alinhar Direita</div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item text-danger" data-action="delete"><i class="bi bi-trash"></i> Deletar</div>
+<!-- Zoom HUD -->
+<div class="zoom-hud">
+  <button id="btnZoomOut"><i class="bi bi-dash"></i></button>
+  <span id="zoomLabel">100%</span>
+  <button id="btnZoomIn"><i class="bi bi-plus"></i></button>
+  <button id="btnZoomReset" title="Resetar zoom">⊞</button>
 </div>
 
-<!-- ══ MODAL: Add Event ═══════════════════════════════════ -->
-<div class="modal fade" id="modalAddEvent" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content bg-dark text-light">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title"><i class="bi bi-lightning me-2 text-warning"></i>Adicionar Evento</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Evento</label>
-          <select id="selEvent" class="form-select form-select-sm bg-dark text-light border-secondary"></select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Ação Pré-definida</label>
-          <select id="selAction" class="form-select form-select-sm bg-dark text-light border-secondary">
-            <option value="">— Código customizado —</option>
-          </select>
-        </div>
-        <div id="actionParamsArea" class="mb-3" style="display:none;"></div>
-        <div class="mb-2">
-          <label class="form-label">Código JS (gerado ou personalizado)</label>
-          <textarea id="eventCode" class="form-control form-control-sm bg-dark text-light border-secondary"
-                    rows="5" placeholder="// seu código aqui&#10;console.log('clicou!');"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer border-secondary">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-warning" id="btnSaveEvent">
-          <i class="bi bi-check-lg me-1"></i>Salvar Evento
-        </button>
-      </div>
+<!-- Modais OData -->
+<div id="modalNovaConexao" style="display:none;position:fixed;inset:0;z-index:5000;
+     background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
+  <div style="background:#1a1e2e;border:1px solid #2a2f4a;border-radius:8px;padding:24px;width:380px;max-width:95vw;">
+    <h5 style="color:#8aadff;margin-bottom:16px;"><i class="bi bi-cloud-plus me-2"></i>Nova Conexão OData</h5>
+    <label class="props-label">Nome</label>
+    <input id="odataConnName" class="props-input mb-2" placeholder="Ex: Servidor de Clientes" style="width:100%;margin-bottom:8px;">
+    <label class="props-label">URL Base</label>
+    <input id="odataConnUrl" class="props-input mb-2" placeholder="http://localhost:8000/odata/" style="width:100%;margin-bottom:8px;">
+    <label class="props-label">Autenticação</label>
+    <select id="odataConnAuth" class="props-input mb-2" style="width:100%;margin-bottom:8px;">
+      <option value="none">Nenhuma</option>
+      <option value="bearer">Bearer Token</option>
+      <option value="basic">Basic</option>
+    </select>
+    <input id="odataConnToken" class="props-input mb-2" placeholder="Token / user:pass" style="width:100%;margin-bottom:16px;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="tb-btn" onclick="document.getElementById('modalNovaConexao').style.display='none'">Cancelar</button>
+      <button class="tb-btn primary" onclick="ODataPanel.saveNewConn()"><i class="bi bi-save me-1"></i>Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- ══ MODAL: Add Rule ════════════════════════════════════ -->
-<div class="modal fade" id="modalAddRule" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content bg-dark text-light">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title"><i class="bi bi-funnel me-2 text-info"></i>Adicionar Regra</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Tipo de Regra</label>
-          <select id="selRule" class="form-select form-select-sm bg-dark text-light border-secondary"></select>
-        </div>
-        <div id="ruleParamsArea" class="mb-2"></div>
-      </div>
-      <div class="modal-footer border-secondary">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-info" id="btnSaveRule">
-          <i class="bi bi-check-lg me-1"></i>Salvar Regra
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL: Galeria de Templates ══════════════════════════ -->
-<div class="modal fade" id="modalTemplates" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content bg-dark text-light">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title"><i class="bi bi-grid-1x2 me-2 text-warning"></i>Galeria de Templates</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p class="text-muted small mb-3">Selecione um template para aplicar na página atual. Os componentes atuais serão substituídos.</p>
-        <div class="row g-3" id="templateGrid">
-          <div class="col-12 text-center py-4">
-            <span class="spinner-border text-primary"></span>
-            <p class="mt-2 text-muted">Carregando templates...</p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer border-secondary">
-        <div class="form-check me-auto">
-          <input type="checkbox" class="form-check-input" id="chkKeepExisting">
-          <label class="form-check-label small" for="chkKeepExisting">Manter componentes existentes</label>
-        </div>
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL: Upload de Imagem ══════════════════════════════ -->
-<div class="modal fade" id="modalImageUpload" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-dark text-light">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title"><i class="bi bi-image me-2 text-info"></i>Gerenciar Imagens</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Upload area -->
-        <div id="uploadDropZone" class="border border-dashed border-secondary rounded p-4 text-center mb-3"
-             style="cursor:pointer;transition:background .2s;">
-          <i class="bi bi-cloud-upload fs-2 text-muted d-block mb-2"></i>
-          <p class="text-muted mb-1">Arraste imagens aqui ou clique para selecionar</p>
-          <small class="text-muted">PNG, JPG, JPEG, GIF, WEBP, SVG — máx. 5MB</small>
-          <input type="file" id="fileInputUpload" accept="image/*" style="display:none;" multiple>
-        </div>
-        <div id="uploadProgress" style="display:none;" class="mb-3">
-          <div class="progress"><div class="progress-bar progress-bar-animated" style="width:0%"></div></div>
-          <small class="text-muted" id="uploadStatus">Enviando...</small>
-        </div>
-        <!-- Gallery -->
-        <div id="imageGallery" class="row g-2">
-          <div class="col-12 text-center text-muted py-3">Carregando imagens...</div>
-        </div>
-      </div>
-      <div class="modal-footer border-secondary">
-        <small class="text-muted me-auto" id="selectedImageUrl"></small>
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-        <button class="btn btn-primary" id="btnUseImage" disabled>
-          <i class="bi bi-check-lg me-1"></i>Usar Imagem
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL: Preview Responsivo ════════════════════════════ -->
-<div class="modal fade" id="modalResponsivePreview" tabindex="-1">
-  <div class="modal-dialog modal-fullscreen">
-    <div class="modal-content bg-dark">
-      <div class="modal-header border-secondary py-2">
-        <div class="d-flex align-items-center gap-2">
-          <h5 class="modal-title me-3"><i class="bi bi-eye me-1 text-info"></i>Preview</h5>
-          <!-- Viewport toggles -->
-          <div class="btn-group" id="viewportToggle">
-            <button class="btn btn-sm btn-outline-light active" data-vp="desktop" title="Desktop (1280px)">
-              <i class="bi bi-display"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-light" data-vp="tablet" title="Tablet (768px)">
-              <i class="bi bi-tablet"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-light" data-vp="mobile" title="Mobile (375px)">
-              <i class="bi bi-phone"></i>
-            </button>
-          </div>
-          <span id="vpLabel" class="text-muted small">1280px</span>
-        </div>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-0 d-flex align-items-start justify-content-center overflow-auto"
-           style="background:#1a1a2e; padding-top:20px !important;">
-        <div id="previewFrame" style="background:#fff;transition:width .3s ease;overflow:auto;">
-          <!-- iframe injected by JS -->
-        </div>
-      </div>
+<!-- Modais Versão -->
+<div id="modalCriarVersao" style="display:none;position:fixed;inset:0;z-index:5000;
+     background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
+  <div style="background:#1a1e2e;border:1px solid #2a2f4a;border-radius:8px;padding:24px;width:360px;max-width:95vw;">
+    <h5 style="color:#8aadff;margin-bottom:16px;"><i class="bi bi-tag me-2"></i>Criar Versão</h5>
+    <label class="props-label">Label</label>
+    <input id="versionLabel" class="props-input" placeholder="v1.0, sprint-3, pre-odata…" style="width:100%;margin-bottom:8px;">
+    <label class="props-label">Descrição</label>
+    <input id="versionDesc" class="props-input" placeholder="Descrição opcional…" style="width:100%;margin-bottom:8px;">
+    <label class="props-label">Tags (separadas por vírgula)</label>
+    <input id="versionTags" class="props-input" placeholder="stable, sprint-1, odata…" style="width:100%;margin-bottom:16px;">
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="tb-btn" onclick="document.getElementById('modalCriarVersao').style.display='none'">Cancelar</button>
+      <button class="tb-btn primary" onclick="VersionPanel.saveVersion()"><i class="bi bi-save me-1"></i>Salvar</button>
     </div>
   </div>
 </div>
 
 <!-- Scripts -->
-<script src="/static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js"></script>
+<script src="/static/js/transaction_nav.js"></script>
 <script src="/static/js/designer.js"></script>
-
-<!-- Bootstrap config injected to JS -->
+<script src="/static/js/odata_panel.js"></script>
+<script src="/static/js/version_panel.js"></script>
 <script>
-  window.DSB_CONFIG = {
-    projectId:      {{ project.id }},
-    pageId:         {{ current_page.id }},
-    canvasW:        {{ current_page.canvas_w or project.canvas_w }},
-    canvasH:        {{ current_page.canvas_h or project.canvas_h }},
-    canvasBg:       "{{ current_page.canvas_bg or project.canvas_bg }}",
-    previewUrl:     "/projetos/{{ project.id }}/preview/{{ current_page.id }}",
-    exportUrl:      "/projetos/{{ project.id }}/exportar",
-    saveUrl:        "/api/paginas/{{ current_page.id }}/salvar",
-    loadUrl:        "/api/paginas/{{ current_page.id }}",
-    eventTypes:     "/api/eventos/tipos",
-    eventActions:   "/api/eventos/acoes",
-    ruleTypes:      "/api/regras/tipos",
-    compCatalog:    "/api/componentes/catalogo",
-    renameUrl:      "/projetos/{{ project.id }}/renomear",
-    templatesUrl:   "/api/templates",
-    applyTplUrl:    "/api/templates/{id}/aplicar/{{ current_page.id }}",
-    uploadUrl:      "/upload/imagem",
-    listUploadsUrl: "/upload/listar",
-    dupPageUrl:     "/projetos/{{ project.id }}/paginas/nova",
-  };
+window.DSB_DESIGNER_CONFIG = {
+  projectId:  {{ project.id }},
+  pageId:     {{ current_page.id }},
+  canvasW:    {{ current_page.canvas_w or project.canvas_w }},
+  canvasH:    {{ current_page.canvas_h or project.canvas_h }},
+  canvasBg:   "{{ current_page.canvas_bg or project.canvas_bg }}",
+};
+
+// ── Left panel tabs ───────────────────────────────────────────
+document.querySelectorAll('[data-tab]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var tab = btn.dataset.tab;
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['lp-palette','lp-pages','lp-outline','lp-odata','lp-history'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = id === tab ? '' : 'none';
+    });
+    if (tab === 'lp-odata')   ODataPanel.init(DSB_DESIGNER_CONFIG.projectId);
+    if (tab === 'lp-history') VersionPanel.init(DSB_DESIGNER_CONFIG.pageId);
+  });
+});
+
+// ── Right panel tabs ──────────────────────────────────────────
+document.querySelectorAll('[data-rtab]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var tab = btn.dataset.rtab;
+    document.querySelectorAll('[data-rtab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['rp-props','rp-events','rp-rules','rp-odata'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = id === tab ? '' : 'none';
+    });
+  });
+});
+
+// ── Modal helpers ─────────────────────────────────────────────
+['modalNovaConexao','modalCriarVersao'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('click', function(e) {
+    if (e.target === el) el.style.display = 'none';
+  });
+});
+
+// ── Rename project ────────────────────────────────────────────
+function renameProject() {
+  var name = prompt('Novo nome do projeto:', document.getElementById('lblProjectName').textContent.trim());
+  if (!name || !name.trim()) return;
+  fetch('/api/projetos/' + DSB_DESIGNER_CONFIG.projectId, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({name: name.trim()})
+  }).then(r => r.json()).then(function(d) {
+    document.getElementById('lblProjectName').textContent = d.name;
+    document.title = 'DS_DESIGNER — ' + d.name;
+  });
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); document.getElementById('btnSave').click(); }
+  if (e.key === 'F5') { e.preventDefault(); document.getElementById('btnPreview').click(); }
+});
+
+// ── Save ──────────────────────────────────────────────────────
+document.getElementById('btnSave').addEventListener('click', function() {
+  var status = document.getElementById('tbStatus');
+  status.textContent = 'Salvando…';
+  // Coleta componentes do canvas (integração com designer.js)
+  var comps = window.DSBDesigner ? DSBDesigner.getComponents() : [];
+  fetch('/api/paginas/' + DSB_DESIGNER_CONFIG.pageId + '/salvar', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({components: comps, author: 'usuario'})
+  })
+  .then(r => r.json())
+  .then(function() {
+    status.textContent = 'Salvo ✓';
+    setTimeout(function() { status.textContent = ''; }, 2000);
+    VersionPanel.load();
+  });
+});
+
+// ── Preview ───────────────────────────────────────────────────
+document.getElementById('btnPreview').addEventListener('click', function() {
+  window.open(
+    '/designer/' + DSB_DESIGNER_CONFIG.projectId +
+    '/preview/' + DSB_DESIGNER_CONFIG.pageId,
+    '_blank'
+  );
+});
+
+// ── Export ZIP ────────────────────────────────────────────────
+document.getElementById('btnExportZip').addEventListener('click', function() {
+  window.location.href = '/api/projetos/' + DSB_DESIGNER_CONFIG.projectId + '/exportar-zip';
+});
 </script>
 </body>
 </html>

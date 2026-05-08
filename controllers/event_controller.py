@@ -1,21 +1,11 @@
-"""
-controllers/event_controller.py — Tipos de Eventos Disponíveis
-===============================================================
-"""
-from flask import Blueprint, jsonify
-from events.event_types import EVENT_CATALOG
-from events.event_actions import ACTION_CATALOG
-
+"""controllers/event_controller.py"""
+from flask import Blueprint, jsonify, request
+from models import db, Component
 bp = Blueprint("event", __name__)
 
-
-@bp.route("/api/eventos/tipos")
-def event_types():
-    """Retorna catálogo de tipos de eventos por categoria de componente."""
-    return jsonify(EVENT_CATALOG)
-
-
-@bp.route("/api/eventos/acoes")
-def event_actions():
-    """Retorna todas as ações disponíveis para associar a eventos."""
-    return jsonify(ACTION_CATALOG)
+@bp.route("/api/componentes/<int:cid>/eventos", methods=["PUT"])
+def save_events(cid):
+    comp = Component.query.get_or_404(cid)
+    comp.events = request.get_json(force=True) or {}
+    db.session.commit()
+    return jsonify({"ok": True, "events": comp.events})

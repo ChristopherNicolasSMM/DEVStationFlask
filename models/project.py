@@ -1,8 +1,7 @@
 """
-models/project.py — Model de Projeto
-======================================
+models/project.py — Model de Projeto v3.0
+==========================================
 Um Projeto agrupa múltiplas Páginas e um Menu configurável.
-Cada projeto tem configurações globais (canvas, tema, etc.).
 """
 
 import datetime
@@ -10,44 +9,25 @@ from models import db
 
 
 class Project(db.Model):
-    """
-    Entidade raiz do sistema.
-    Relacionamentos:
-        pages  → 1:N Page  (cascade delete)
-        menus  → 1:N Menu  (cascade delete)
-    """
-
     __tablename__ = "projects"
 
-    # ── Identificação ─────────────────────────────────────────────
     id          = db.Column(db.Integer, primary_key=True)
     name        = db.Column(db.String(200), nullable=False, default="Sem Título")
     description = db.Column(db.String(500), nullable=True)
-
-    # ── Canvas Global ─────────────────────────────────────────────
     canvas_w    = db.Column(db.Integer,     default=1280)
     canvas_h    = db.Column(db.Integer,     default=900)
     canvas_bg   = db.Column(db.String(20),  default="#ffffff")
-
-    # ── Timestamps ────────────────────────────────────────────────
     created_at  = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at  = db.Column(db.DateTime, default=datetime.datetime.utcnow,
                             onupdate=datetime.datetime.utcnow)
 
-    # ── Relacionamentos ───────────────────────────────────────────
-    pages = db.relationship(
-        "Page", backref="project",
-        cascade="all, delete-orphan",
-        order_by="Page.order"
-    )
-    menus = db.relationship(
-        "Menu", backref="project",
-        cascade="all, delete-orphan"
-    )
+    pages  = db.relationship("Page",  backref="project", cascade="all, delete-orphan", order_by="Page.order")
+    menus  = db.relationship("Menu",  backref="project", cascade="all, delete-orphan")
+    odata_connections = db.relationship("ODataConnection", backref="project",
+                                        cascade="all, delete-orphan",
+                                        foreign_keys="ODataConnection.project_id")
 
-    # ── Serialização ──────────────────────────────────────────────
     def to_dict(self) -> dict:
-        """Converte para dicionário (usado nas respostas JSON)."""
         return {
             "id":          self.id,
             "name":        self.name,

@@ -1,62 +1,42 @@
-"""
-controllers/component_controller.py — API de Componentes
-==========================================================
-Expõe o catálogo de tipos disponíveis e operações sobre
-instâncias individuais de componentes.
-
-  GET  /api/componentes/catalogo           → catálogo completo
-  GET  /api/componentes/tipo/<type>        → defaults de um tipo
-  POST /api/componentes/<cid>/eventos      → salva eventos
-  POST /api/componentes/<cid>/regras       → salva regras
-  DEL  /api/componentes/<cid>             → remove
-"""
-
+"""controllers/component_controller.py — Componentes v3.0"""
 from flask import Blueprint, jsonify, request
-from models import db, Component
-from components import ComponentRegistry
+from models import db, Component, Page
 
 bp = Blueprint("component", __name__)
 
-
-@bp.route("/api/componentes/catalogo")
-def catalog():
-    """Retorna o catálogo completo de tipos de componentes."""
-    return jsonify(ComponentRegistry.get_catalog())
-
-
-@bp.route("/api/componentes/tipo/<string:comp_type>")
-def type_defaults(comp_type: str):
-    """Retorna as propriedades padrão, eventos e regras de um tipo."""
-    entry = ComponentRegistry.get(comp_type)
-    if not entry:
-        return jsonify({"error": f"Tipo '{comp_type}' não encontrado"}), 404
-    return jsonify(entry)
-
-
-@bp.route("/api/componentes/<int:cid>/eventos", methods=["POST"])
-def save_events(cid: int):
-    """Salva o mapa de eventos de um componente."""
+@bp.route("/api/componentes/<int:cid>", methods=["PUT"])
+def update_component(cid: int):
     comp = Component.query.get_or_404(cid)
     data = request.get_json(force=True) or {}
-    comp.events = data.get("events", {})
+    for key in ("x","y","width","height","z_index","type","name","properties","events","rules"):
+        if key in data:
+            setattr(comp, key, data[key])
     db.session.commit()
-    return jsonify({"ok": True, "events": comp.events})
-
-
-@bp.route("/api/componentes/<int:cid>/regras", methods=["POST"])
-def save_rules(cid: int):
-    """Salva a lista de regras de um componente."""
-    comp = Component.query.get_or_404(cid)
-    data = request.get_json(force=True) or {}
-    comp.rules = data.get("rules", [])
-    db.session.commit()
-    return jsonify({"ok": True, "rules": comp.rules})
-
+    return jsonify(comp.to_dict())
 
 @bp.route("/api/componentes/<int:cid>", methods=["DELETE"])
-def delete(cid: int):
-    """Remove um componente pelo ID."""
+def delete_component(cid: int):
     comp = Component.query.get_or_404(cid)
     db.session.delete(comp)
     db.session.commit()
     return jsonify({"ok": True})
+
+@bp.route("/api/paginas/<int:pgid>/componentes", methods=["POST"])
+def add_component(pgid: int):
+    Page.query.get_or_404(pgid)
+    data = request.get_json(force=True) or {}
+    count = Component.query.filter_by(page_id=pgid).count()
+    comp = Component(
+        page_id=pgid,
+        type=data.get("type","label"),
+        name=data.get("name", f"comp_{count+1}"),
+        x=int(data.get("x", 100)), y=int(data.get("y", 100)),
+        width=int(data.get("width", 150)), height=int(data.get("height", 40)),
+        z_index=count+1,
+        properties=data.get("properties",{}),
+        events=data.get("events",{}),
+        rules=data.get("rules",[]),
+    )
+    db.session.add(comp)
+    db.session.commit()
+    return jsonify(comp.to_dict()), 201

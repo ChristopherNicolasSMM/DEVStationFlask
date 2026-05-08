@@ -1,19 +1,13 @@
 """
-controllers/__init__.py
-========================
+controllers/__init__.py — v3.0
+================================
 Registra todos os Blueprints na aplicação Flask.
-Cada controller é um Blueprint independente, promovendo
-separação de responsabilidades e escalabilidade.
 """
 
 from flask import Flask
 
 
 def register_blueprints(app: Flask) -> None:
-    """
-    Importa e registra cada Blueprint.
-    Adicionar um novo controller: basta criar o módulo e incluir aqui.
-    """
     from .project_controller   import bp as project_bp
     from .page_controller      import bp as page_bp
     from .component_controller import bp as component_bp
@@ -21,15 +15,14 @@ def register_blueprints(app: Flask) -> None:
     from .rule_controller      import bp as rule_bp
     from .export_controller    import bp as export_bp
     from .menu_controller      import bp as menu_bp
-    from .upload_controller    import bp as upload_bp
-    from .template_controller  import bp as template_bp
+    from .odata_controller     import bp as odata_bp
+    from .version_controller   import bp as version_bp
+    from .build_controller     import bp as build_bp
+    from .nav_controller       import bp as nav_bp
+    from .plugin_controller    import bp as plugin_bp
+    from .addon_controller     import bp as addon_bp
 
-    app.register_blueprint(project_bp)
-    app.register_blueprint(page_bp)
-    app.register_blueprint(component_bp)
-    app.register_blueprint(event_bp)
-    app.register_blueprint(rule_bp)
-    app.register_blueprint(export_bp)
-    app.register_blueprint(menu_bp)
-    app.register_blueprint(upload_bp)
-    app.register_blueprint(template_bp)
+    for bp in [project_bp, page_bp, component_bp, event_bp, rule_bp,
+               export_bp, menu_bp, odata_bp, version_bp, build_bp,
+               nav_bp, plugin_bp, addon_bp]:
+        app.register_blueprint(bp)

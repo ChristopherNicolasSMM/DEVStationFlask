@@ -1,14 +1,11 @@
-"""
-controllers/rule_controller.py — Tipos de Regras Disponíveis
-=============================================================
-"""
-from flask import Blueprint, jsonify
-from rules.rule_types import RULE_CATALOG
-
+"""controllers/rule_controller.py"""
+from flask import Blueprint, jsonify, request
+from models import db, Component
 bp = Blueprint("rule", __name__)
 
-
-@bp.route("/api/regras/tipos")
-def rule_types():
-    """Retorna catálogo de regras disponíveis com parâmetros e descrição."""
-    return jsonify(RULE_CATALOG)
+@bp.route("/api/componentes/<int:cid>/regras", methods=["PUT"])
+def save_rules(cid):
+    comp = Component.query.get_or_404(cid)
+    comp.rules = request.get_json(force=True) or []
+    db.session.commit()
+    return jsonify({"ok": True, "rules": comp.rules})
