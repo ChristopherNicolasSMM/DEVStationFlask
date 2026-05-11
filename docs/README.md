@@ -1,54 +1,31 @@
-# DevStation Builder v3.0 — Documentação
+# DevStation Builder v3.0 — Documentação Técnica
 
 **Stack:** Python / Flask / SQLAlchemy / Bootstrap Icons / Vanilla JS  
-**Versão:** 3.0.0  
-**Status:** ✅ 58 testes passando
+**Versão:** 3.0.4  
+**Testes:** 58 passed  
+**GitHub:** https://github.com/ChristopherNicolasSMM/DEVStationFlask
 
 ---
 
-## Sumário
+## Documentação Disponível
 
-1. [Visão Geral](#1-visão-geral)
-2. [Instalação](#2-instalação)
-3. [Arquitetura](#3-arquitetura)
-4. [Eixo A — Integração OData](#4-eixo-a--integração-odata)
-5. [Eixo B — Versionamento](#5-eixo-b--versionamento)
-6. [Eixo C — Build Pipeline](#6-eixo-c--build-pipeline)
-7. [Eixo D — Navegação por Transações](#7-eixo-d--navegação-por-transações)
-8. [Plugins e Addons](#8-plugins-e-addons)
-9. [Referência de Rotas API](#9-referência-de-rotas-api)
-10. [Testes](#10-testes)
+| Arquivo | Público | Conteúdo |
+|---------|---------|----------|
+| [`MANUAL_USUARIO.md`](./MANUAL_USUARIO.md) | Usuários / Devs | Manual completo de uso do DS_DESIGNER e todas as transações |
+| [`GUIA_RAPIDO.md`](./GUIA_RAPIDO.md) | Devs novos | Início em 5 minutos, atalhos, exemplos rápidos |
+| [`REFERENCIA_API.md`](./REFERENCIA_API.md) | Devs / Integradores | Todos os endpoints REST com exemplos JSON |
+| [`CHANGELOG.md`](./CHANGELOG.md) | Todos | Histórico completo de versões e correções |
+| [`ARCHITECTURE.mermaid`](./ARCHITECTURE.mermaid) | Arquitetos | Diagramas C4, ER e fluxo de dados |
+| **Este arquivo** | Devs | Arquitetura técnica, estrutura, setup |
 
 ---
 
-## 1. Visão Geral
-
-O **DevStation Builder v3.0** é a plataforma RAD visual construída sobre Flask + SQLAlchemy.  
-Esta versão adiciona quatro novos eixos ao builder v2.2:
-
-| Eixo | Código | Descrição |
-|------|--------|-----------|
-| A | OData | Conexão a servidores OData V4 com geração automática de telas |
-| B | Version | Versionamento com snapshots, restauração e backup `.dsk` |
-| C | Build | Pipeline pytest + geração de ZIP versionado (`DS_BUILD`) |
-| D | Nav | Navegação por transações `DS_*` com launchpad e busca global |
-
----
-
-## 2. Instalação
+## Instalação
 
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/ChristopherNicolasSMM/DEVStationFlask
-
-# 2. Instale dependências
 pip install -r requirements.txt
-
-# 3. Execute
 python app.py
-
-# 4. Acesse
-http://localhost:5000
+# http://localhost:5000
 ```
 
 **requirements.txt:**
@@ -63,344 +40,354 @@ deepdiff>=7.0.0
 
 ---
 
-## 3. Arquitetura
+## Estrutura de Pastas
 
 ```
-dsb_v3/
-├── app.py                     # Application Factory
-├── config.py                  # Configurações centralizadas
-├── models/                    # SQLAlchemy Models
-│   ├── project.py             # Projeto (raiz)
-│   ├── page.py                # Página dentro de um projeto
-│   ├── component.py           # Componente posicionado na página
-│   ├── menu.py                # Configuração de menu (JSON)
-│   ├── odata_connection.py    # Conexão OData (Eixo A)
-│   ├── page_version.py        # Versão/snapshot de página (Eixo B)
-│   ├── version_backup.py      # Registro de backups .dsk (Eixo B)
-│   ├── transaction.py         # Catálogo de transações DS_* (Eixo D)
-│   ├── plugin.py              # Plugin NDS_* descoberto (Eixo D)
-│   ├── addon.py               # Addon de extensão (Eixo D)
-│   ├── addon_log.py           # Log imutável de ações de addon (Eixo D)
-│   └── build_log.py           # Log de builds pytest (Eixo C)
-├── controllers/               # Blueprints Flask (MVC)
-├── odata/                     # Módulo OData V4 (Eixo A)
-├── versioning/                # Snapshots e backups (Eixo B)
-├── transactions/              # Registry e catálogo DS_* (Eixo D)
-├── tests/                     # Suite pytest (Eixo C)
-├── views/                     # Templates Jinja2
-└── static/js/                 # JavaScript modular
-    ├── transaction_nav.js     # Campo de transação + launchpad
-    ├── odata_panel.js         # Painel OData no Designer
-    └── version_panel.js       # Painel de versões no Designer
-```
-
----
-
-## 4. Eixo A — Integração OData
-
-### Fluxo
-
-```
-1. Criar conexão  →  POST /api/projetos/<pid>/odata-connections
-2. Testar         →  POST /api/odata-connections/<cid>/testar
-3. Listar ent.    →  GET  /api/odata-connections/<cid>/entidades
-4. Gerar tela     →  POST /api/odata-connections/<cid>/gerar-tela
-```
-
-### Geração automática de telas
-
-```json
-POST /api/odata-connections/1/gerar-tela
-{
-  "entity":    "Customers",
-  "mode":      "both",
-  "page_name": "Clientes"
-}
-```
-
-Modos disponíveis: `list` | `form` | `both`
-
-Resposta:
-```json
-{
-  "ok": true,
-  "pages": [
-    { "id": 5, "name": "Clientes — Lista", ... },
-    { "id": 6, "name": "Clientes — Formulário", ... }
-  ]
-}
-```
-
-### Mapeamento de tipos
-
-| `FieldType` (S2MOdataPy) | Componente DSB |
-|--------------------------|----------------|
-| `TEXT` | `textbox` |
-| `NUMBER` | `numberbox` |
-| `DATE` | `datepicker` |
-| `BOOLEAN` | `switch` |
-| `DROPDOWN` | `combobox` |
-
-### Binding no HTML exportado
-
-Quando um componente tem `properties.odata` configurado, o `HtmlGenerator`
-injeta automaticamente o runtime `DSB.odata` e o código de inicialização:
-
-```javascript
-DSB.odata.bind('comp_42', 'http://localhost:8000/odata', 'Customers', {
-  filter: "Country eq 'Brazil'",
-  orderby: 'CompanyName asc',
-  top: 20
-});
-```
-
-A URL base é configurável via `window.DSB_ODATA_CONFIG.baseUrl` sem necessidade de regerar o ZIP.
-
----
-
-## 5. Eixo B — Versionamento
-
-### Regras fundamentais
-
-- **Nunca há purga automática** — o sistema apenas *sugere* versões antigas para purga.
-- **Ao deletar qualquer versão**, um backup `.dsk` é gerado automaticamente antes.
-- O arquivo `.dsk` é um ZIP renomeado contendo o JSON completo da versão.
-- Todos os backups ficam registrados em `VersionBackup` para rastreabilidade total.
-- Um snapshot pré-restauração é sempre criado antes de qualquer `restore`.
-
-### Gatilhos de snapshot automático
-
-| Evento | Tag | Retenção |
-|--------|-----|----------|
-| `save_page` (Ctrl+S) | `auto` | Permanente (sugestão de purga após 10) |
-| Geração OData | `odata-gen` | Permanente |
-| Pré-restauração | `pre-restore` | Permanente |
-| Pré-reset de projeto | `pre-reset` | Permanente |
-
-### Backup .dsk
-
-```
-Extensão:  .dsk  (DevStation Backup)
-Conteúdo:  ZIP com version.json + README.txt
-Local:     dist/backups/version_page{N}_{label}_{ts}.dsk
-Registro:  tabela version_backups
-```
-
-### API de versões
-
-```
-GET  /api/paginas/<pgid>/versoes              → lista versões
-POST /api/paginas/<pgid>/versoes              → criar versão nomeada
-GET  /api/versoes/<vid>?snapshot=1            → detalhe + snapshot
-POST /api/versoes/<vid>/restaurar             → restaurar
-DELETE /api/versoes/<vid>                     → deletar (gera .dsk)
-GET  /api/versoes/diff?a=<vid>&b=<vid>        → diff entre versões
-GET  /api/paginas/<pgid>/versoes/sugestoes-purga → sugeridas para purga
-GET  /api/versoes/backups/<pid>               → lista backups .dsk
-GET  /api/versoes/backups/<bid>/download      → baixar .dsk
+devstation_builder/
+│
+├── app.py                        # Application Factory (create_app)
+├── config.py                     # Configurações centralizadas
+├── requirements.txt
+├── build.py                      # Pipeline CLI: pytest + ZIP
+│
+├── models/                       # SQLAlchemy Models
+│   ├── __init__.py               # Expõe db + todos os models
+│   ├── project.py                # Projeto (raiz da hierarquia)
+│   ├── page.py                   # Página dentro de projeto
+│   ├── component.py              # Componente posicionado no canvas
+│   ├── menu.py                   # Menu/sidebar (JSON)
+│   ├── menu_defaults.py          # Configuração padrão de menus
+│   ├── odata_connection.py       # Conexão OData V4 com cache
+│   ├── page_version.py           # Snapshot de página com soft-delete
+│   ├── version_backup.py         # Registro imutável de .dsk gerados
+│   ├── transaction.py            # Catálogo de transações DS_*/NDS_*
+│   ├── plugin.py                 # Plugin descoberto em plugins/
+│   ├── addon.py                  # Addon de extensão
+│   ├── addon_log.py              # Log imutável de ações de addon
+│   └── build_log.py              # Log de builds pytest
+│
+├── controllers/                  # Blueprints Flask (MVC Controller)
+│   ├── __init__.py               # Registra todos os blueprints
+│   ├── project_controller.py     # CRUD de projetos + rota /designer
+│   ├── page_controller.py        # CRUD de páginas + save/load canvas
+│   ├── component_controller.py   # CRUD de componentes individuais
+│   ├── event_controller.py       # Eventos de componente
+│   ├── rule_controller.py        # Regras de componente
+│   ├── export_controller.py      # Preview inline + export HTML/ZIP
+│   ├── menu_controller.py        # CRUD de menus
+│   ├── odata_controller.py       # OData: conexões, entidades, geração
+│   ├── version_controller.py     # Versões: CRUD, diff, restore, .dsk
+│   ├── build_controller.py       # Pipeline: pytest + ZIP
+│   ├── nav_controller.py         # DS_HOME + navegação /transacoes/<code>
+│   ├── plugin_controller.py      # Ativar/desativar plugins
+│   └── addon_controller.py       # Instalar/ativar/log addons
+│
+├── odata/                        # Módulo de integração OData V4
+│   ├── __init__.py
+│   ├── connection_manager.py     # Descoberta de $metadata + HTTP client
+│   └── screen_generator.py      # Gera Page+Components a partir de UIAnnotations
+│
+├── versioning/                   # Motor de versionamento
+│   ├── __init__.py
+│   ├── snapshot.py               # Criar/restaurar snapshots + gerar .dsk
+│   └── diff_engine.py            # Comparação entre dois snapshots
+│
+├── transactions/                 # Catálogo DS_* e descoberta de plugins
+│   ├── __init__.py
+│   ├── catalog.py                # Lista de transações DS_* nativas
+│   └── registry.py               # Seed no banco + scan de plugins/
+│
+├── components/                   # ComponentRegistry (legado v2.2)
+│   ├── __init__.py               # Singleton ComponentRegistry
+│   ├── base_component.py         # Classe abstrata BaseComponent
+│   └── definitions.py            # 36 tipos de componente
+│
+├── events/                       # Catálogo de eventos e ações (legado v2.2)
+│   ├── __init__.py
+│   ├── event_types.py
+│   └── event_actions.py
+│
+├── rules/                        # Catálogo de regras (legado v2.2)
+│   ├── __init__.py
+│   └── rule_types.py
+│
+├── tests/                        # Suite pytest
+│   ├── conftest.py               # App em memória, fixtures, seed de dados
+│   ├── test_smoke.py             # Todas as rotas HTTP (project/page/component/menu/nav)
+│   ├── test_odata.py             # Conexões OData com mock de servidor
+│   ├── test_versioning.py        # Criar/restaurar/diff/deletar versões + .dsk
+│   └── test_transactions.py      # Catálogo DS_*, busca, navegação
+│
+├── plugins/                      # Pasta de plugins NDS_* (scan automático)
+│   └── .gitkeep
+│
+├── addons/                       # Pasta de addons extraídos
+│   └── .gitkeep
+│
+├── views/                        # Templates Jinja2
+│   ├── base.html                 # Base com header, campo tx global, toast
+│   ├── dashboard.html            # DS_HOME: launchpad multi-aba
+│   ├── designer.html             # DS_DESIGNER: canvas + painéis
+│   ├── preview.html              # Preview inline com estilo do sistema
+│   ├── ds_versions.html          # DS_VERSIONS: histórico de versões
+│   ├── ds_plugins.html           # DS_PLUGINS: gerenciador de plugins
+│   ├── ds_addons.html            # DS_ADDONS: gerenciador de addons
+│   ├── ds_build.html             # DS_BUILD: pipeline de testes
+│   ├── ds_menu_editor.html       # DS_MENU: editor visual de menu
+│   ├── ds_odata.html             # DS_ODATA: overview de conexões
+│   ├── ds_audit_stub.html        # DS_AUDIT: stub (v4.0)
+│   ├── ds_users_stub.html        # DS_USERS: stub (v4.0)
+│   └── 404_tx.html               # Transação não encontrada
+│
+├── static/
+│   └── js/
+│       ├── designer.js           # Engine canvas: drag/resize/select/undo/zoom
+│       ├── odata_panel.js        # Painel OData: conexões, entidades, binding
+│       ├── version_panel.js      # Painel histórico: timeline, criar, restaurar
+│       └── transaction_nav.js    # Campo tx global, autocomplete, launchpad
+│
+├── dist/                         # ZIPs de distribuição (gerado por DS_BUILD)
+│   └── backups/                  # Backups .dsk de versões deletadas
+│
+├── instance/                     # Banco SQLite (gitignored)
+│   └── devstation.db
+│
+└── docs/
+    ├── README.md                 # Este arquivo
+    ├── MANUAL_USUARIO.md         # Manual completo do usuário
+    ├── GUIA_RAPIDO.md            # Quick start
+    ├── REFERENCIA_API.md         # Referência de todos os endpoints
+    ├── CHANGELOG.md              # Histórico de versões
+    └── ARCHITECTURE.mermaid      # Diagramas C4 + ER
 ```
 
 ---
 
-## 6. Eixo C — Build Pipeline
+## Arquitetura
 
-### Executar via CLI
+### Application Factory
 
-```bash
-python -m pytest tests/ -v
+```python
+# app.py
+def create_app(test_config=None) -> Flask:
+    app = Flask(__name__, template_folder="views")
+    app.config.from_object(Config)
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+    register_blueprints(app)       # 13 blueprints
+    seed_transactions(app)         # DS_* no banco
+    discover_plugins(app)          # scan plugins/
+    return app
 ```
 
-### Via API (`DS_BUILD`)
+### Hierarquia de Models
 
 ```
-POST /api/build/run-tests     → inicia pytest em thread assíncrona
-GET  /api/build/status        → status do último build
-POST /api/build/create-zip    → gera ZIP de distribuição
-GET  /api/build/logs          → histórico de builds
-GET  /api/build/zip/<id>/download → baixar ZIP
+Project (1)
+  ├── Page (N)
+  │     ├── Component (N)          ← properties{odata{...}} para binding
+  │     └── PageVersion (N)        ← snapshot completo
+  ├── Menu (N)                     ← config JSON (main/sidebar)
+  └── ODataConnection (N)          ← cache de $metadata
+
+Transaction (global)               ← catálogo DS_*/NDS_*
+Plugin      (global)               ← descobertos em plugins/
+Addon       (global)               ← instalados em addons/
+  └── AddonLog (N)                 ← log imutável de ações
+BuildLog    (global)               ← histórico de builds pytest
+VersionBackup (global)             ← registro de .dsk gerados
 ```
 
-O endpoint `run-tests` retorna imediatamente com `build_id`.
-Use polling em `GET /api/build/logs/<build_id>` para acompanhar o resultado.
-
-### Artefato gerado
+### Fluxo de Versionamento
 
 ```
-dist/devstation_builder_v{version}_{timestamp}.zip
+save_page()
+    └── create_auto_snapshot()
+            └── PageVersion(is_auto=True)
+                    └── _suggest_purge_if_needed()  ← SUGERE, nunca purga
+
+delete_version()
+    └── delete_version_with_backup()
+            ├── gera .dsk (ZIP com version.json)
+            ├── registra VersionBackup no banco
+            └── soft-delete PageVersion
+
+restore_snapshot()
+    ├── create_named_snapshot("pre-restore")   ← ANTES de restaurar
+    ├── deleta componentes atuais
+    └── recria do snapshot
 ```
 
----
+### Cadeia de Descoberta OData ($metadata)
 
-## 7. Eixo D — Navegação por Transações
-
-### Campo de transação global
-
-Presente em todas as telas via `base.html`.
-
-- **Atalho:** `Ctrl+F5` foca o campo de qualquer tela
-- **Autocomplete:** busca em código + label na API `/api/transacoes`
-- **Histórico:** últimos 10 códigos usados (localStorage)
-- **Enter:** navega para `/transacoes/<CODE>`
-
-### Catálogo DS_*
-
-| Código | Grupo | Perfil Mínimo |
-|--------|-------|---------------|
-| `DS_HOME` | Core | USER |
-| `DS_PROJECTS` | Core | USER |
-| `DS_DESIGNER` | Design | DEVELOPER |
-| `DS_MENU` | Design | DEVELOPER |
-| `DS_ODATA` | Integration | DEVELOPER |
-| `DS_VERSIONS` | DevOps | DEVELOPER |
-| `DS_BUILD` | DevOps | CORE_DEV |
-| `DS_PLUGINS` | Platform | DEVELOPER |
-| `DS_ADDONS` | Platform | DEVELOPER |
-| `DS_AUDIT` | Admin | ADMIN |
-| `DS_USERS` | Admin | ADMIN |
-
----
-
-## 8. Plugins e Addons
-
-### Plugins (NDS_*)
-
-1. Criar pasta `plugins/<nome>/` com `plugin.json`
-2. Acessar `DS_PLUGINS` → clicar **Re-escanear**
-3. Plugin aparece como **inativo** — ativar manualmente
-
-```json
-// plugins/meu_plugin/plugin.json
-{
-  "code": "meu_plugin",
-  "name": "Meu Plugin",
-  "version": "1.0.0",
-  "entry_point": "meu_plugin.transactions",
-  "transactions": ["NDS_MEU_MODULO"]
-}
+```
+fetch_metadata()
+    ├── [Cache válido?] → retorna cache
+    └── _discover_and_fetch_metadata()
+            ├── _extract_context_base()          # GET base_url → @odata.context
+            │     └── Tenta {ctx_base}.json
+            ├── {base}/$metadata.json            # JSON prioritário
+            ├── {base}/%24metadata.json
+            ├── {base}/metadata.json
+            ├── {base}/$metadata                 # XML fallback
+            ├── {base}/%24metadata
+            └── {base}/metadata
+                    └── _parse_response()        # auto-detecta JSON ou XML
 ```
 
-### Addons
+### Fluxo de Geração de Tela OData
 
-1. Empacotar como ZIP com `addon.json` na raiz
-2. `DS_ADDONS` → **Instalar Addon** → upload do ZIP
-3. Revisar o log de validação
-4. Clicar **Instalar** (requer `confirmed: true`)
-5. Após instalação, clicar **Ativar**
-
-Todas as etapas são registradas em `AddonLog` — **nenhuma ação ocorre automaticamente**.
-
----
-
-## 9. Referência de Rotas API
-
-### Projetos
 ```
-GET  /projetos                    → lista
-POST /api/projetos                → criar
-PUT  /api/projetos/<pid>          → atualizar
-DEL  /api/projetos/<pid>          → deletar
-GET  /api/projetos/<pid>/exportar-zip
-```
-
-### Páginas
-```
-GET  /api/projetos/<pid>/paginas
-POST /api/projetos/<pid>/paginas
-GET  /api/paginas/<pgid>?snapshot=1
-PUT  /api/paginas/<pgid>
-DEL  /api/paginas/<pgid>
-POST /api/paginas/<pgid>/salvar
-POST /api/paginas/<pgid>/duplicar
-GET  /api/paginas/<pgid>/exportar-html
-```
-
-### Componentes
-```
-POST /api/paginas/<pgid>/componentes
-PUT  /api/componentes/<cid>
-DEL  /api/componentes/<cid>
-PUT  /api/componentes/<cid>/eventos
-PUT  /api/componentes/<cid>/regras
-```
-
-### OData
-```
-GET  /api/projetos/<pid>/odata-connections
-POST /api/projetos/<pid>/odata-connections
-DEL  /api/odata-connections/<cid>
-POST /api/odata-connections/<cid>/testar
-GET  /api/odata-connections/<cid>/entidades
-POST /api/odata-connections/<cid>/gerar-tela
-```
-
-### Versões
-```
-GET  /api/paginas/<pgid>/versoes
-POST /api/paginas/<pgid>/versoes
-GET  /api/versoes/<vid>
-POST /api/versoes/<vid>/restaurar
-DEL  /api/versoes/<vid>
-GET  /api/versoes/diff?a=<vid>&b=<vid>
-GET  /api/paginas/<pgid>/versoes/sugestoes-purga
-POST /api/projetos/<pid>/reset
-GET  /api/versoes/backups/<pid>
-GET  /api/versoes/backups/<bid>/download
-```
-
-### Plugins e Addons
-```
-GET  /api/plugins
-GET  /api/plugins/<code>
-POST /api/plugins/<code>/ativar
-POST /api/plugins/<code>/desativar
-POST /api/plugins/redescobrir
-
-GET  /api/addons
-POST /api/addons/upload
-POST /api/addons/<code>/instalar
-POST /api/addons/<code>/ativar
-POST /api/addons/<code>/desativar
-DEL  /api/addons/<code>
-GET  /api/addons/<code>/logs
-```
-
-### Build
-```
-POST /api/build/run-tests
-GET  /api/build/status
-POST /api/build/create-zip
-GET  /api/build/logs
-GET  /api/build/logs/<bid>
-GET  /api/build/zip/<bid>/download
-```
-
-### Transações
-```
-GET  /api/transacoes?q=<busca>
-GET  /api/transacoes/<code>
-GET  /transacoes/<CODE>            → navega para a tela
+ODataScreenGenerator.generate("Customers", "form")
+    ├── mgr.get_entity("Customers")             # do cache de metadata
+    ├── _create_page("Clientes — Formulário")
+    ├── Heading component (y=20, h=52)
+    ├── Para cada grupo em ui.form.groups:
+    │     ├── GroupBox (altura = ceil(fields/2) × field_h)
+    │     └── Para cada campo:
+    │           ├── Tipo: TEXT→textbox, NUMBER→numberbox...
+    │           ├── Position: col_w proporcional ao canvas_w
+    │           ├── Props: label, placeholder, odata.field_binding
+    │           └── Rules: obrigatorio, max_length (se declarado)
+    ├── Botões Salvar/Cancelar
+    └── create_auto_snapshot(tags=["odata-gen", "auto-form"])
 ```
 
 ---
 
-## 10. Testes
+## Módulos Principais
+
+### `ODataConnectionManager`
+
+```python
+mgr = ODataConnectionManager(connection)
+mgr.test_connection()          # → {"ok": True, "entities_count": 3}
+mgr.fetch_metadata()           # → {"entities": [...]}  (com cache)
+mgr.list_entities()            # → [{name, label, fields, ui}]
+mgr.get_entity("Customers")   # → {name, label, fields, ui}
+mgr.query("Customers", {"$filter": "Country eq 'BR'", "$top": "20"})
+mgr.patch("Customers", "1", {"CompanyName": "Novo Nome"})
+```
+
+### `ODataScreenGenerator`
+
+```python
+gen = ODataScreenGenerator(connection, project)
+pages = gen.generate("Customers", "both", "Clientes")
+# → [{"id": 5, "name": "Clientes — Lista"}, {"id": 6, "name": "...Formulário"}]
+```
+
+### `versioning.snapshot`
+
+```python
+from versioning import (
+    create_auto_snapshot,    # chamado pelo save_page automaticamente
+    create_named_snapshot,   # chamado pelo usuário via API
+    restore_snapshot,        # restaura + cria pre-restore
+    delete_version_with_backup,  # gera .dsk + soft-delete
+    get_purge_suggestions,   # lista versões sugeridas p/ purga
+    diff_versions,           # {"added": [...], "removed": [...]}
+)
+```
+
+### `transactions.registry`
+
+```python
+seed_transactions(app)   # insere DS_* se não existirem
+discover_plugins(app)    # scan plugins/ → registra no banco (inativo)
+                         # carrega apenas plugins com is_active=True
+```
+
+---
+
+## Testes
 
 ```bash
 # Suite completa
 python -m pytest tests/ -v
 
 # Por módulo
-python -m pytest tests/test_smoke.py       -v   # Rotas core
-python -m pytest tests/test_odata.py       -v   # Integração OData
-python -m pytest tests/test_versioning.py  -v   # Versionamento
-python -m pytest tests/test_transactions.py -v  # Navegação
+python -m pytest tests/test_smoke.py        # rotas HTTP core
+python -m pytest tests/test_odata.py        # OData com mock
+python -m pytest tests/test_versioning.py   # versioning + .dsk
+python -m pytest tests/test_transactions.py # catálogo + navegação
 ```
 
-**Resultado esperado: 58 passed**
+**Fixtures (`tests/conftest.py`):**
 
-Fixtures disponíveis em `tests/conftest.py`:
-- `app` — aplicação Flask com SQLite em memória
-- `client` — test client HTTP
-- `project_id` — ID do projeto de teste
-- `page_id` — ID da página de teste
-- `odata_conn_id` — ID da conexão OData de teste (se existir)
+| Fixture | Escopo | Descrição |
+|---------|--------|-----------|
+| `app` | session | Flask com SQLite in-memory + seed |
+| `client` | function | Test client HTTP |
+| `project_id` | function | ID do projeto de teste |
+| `page_id` | function | ID da página de teste |
+| `odata_conn_id` | function | ID de conexão OData (se existir) |
+
+---
+
+## Build Pipeline
+
+```bash
+# Testes + ZIP via terminal
+python -m pytest tests/ && python -c "
+import zipfile, os
+with zipfile.ZipFile('dist/devstation_v3.0.4.zip','w') as z:
+    for r,d,f in os.walk('.'):
+        d[:] = [x for x in d if x not in {'.git','__pycache__','dist','.venv'}]
+        for file in f:
+            if not file.endswith('.pyc'):
+                z.write(os.path.join(r,file))
+"
+
+# Via DS_BUILD (browser)
+POST /api/build/run-tests   → aguarda status 'passed'
+POST /api/build/create-zip  → gera dist/devstation_builder_v3.0.4_{ts}.zip
+GET  /api/build/zip/{id}/download
+```
+
+---
+
+## Configurações (`config.py`)
+
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `SECRET_KEY` | `devstation-builder-secret-v3` | Chave Flask session |
+| `SQLALCHEMY_DATABASE_URI` | `sqlite:///instance/devstation.db` | Banco de dados |
+| `DEFAULT_CANVAS_W` | `1280` | Largura padrão do canvas |
+| `DEFAULT_CANVAS_H` | `900` | Altura padrão do canvas |
+| `VERSION_AUTO_SUGGEST_PURGE_AFTER` | `10` | Threshold de sugestão de purga |
+| `DSK_EXTENSION` | `.dsk` | Extensão dos backups |
+| `ODATA_METADATA_TTL_SECONDS` | `300` | TTL do cache de metadata (5 min) |
+| `PLUGINS_DIR` | `./plugins` | Pasta de plugins NDS_* |
+| `ADDONS_DIR` | `./addons` | Pasta de addons extraídos |
+| `BUILD_DIST_DIR` | `./dist` | Pasta de ZIPs de distribuição |
+| `BUILD_VERSION` | `3.0.0` | Versão atual para o ZIP |
+
+---
+
+## Extensão da Plataforma
+
+### Adicionar Novo Componente
+
+1. Em `components/definitions.py`, crie uma classe herdando `BaseComponent`
+2. Implemente: `type`, `label`, `icon`, `group`, `default_properties`, `default_size`, `render_html()`
+3. Registre em `components/__init__.py` → `_COMPONENTS_LIST`
+4. Adicione a prévia em `static/js/designer.js` → objeto `map` em `_buildPreview()`
+5. Execute `python -m pytest tests/test_smoke.py` para validar
+
+### Adicionar Nova Transação DS_*
+
+1. Em `transactions/catalog.py`, adicione ao array `DS_TRANSACTIONS`
+2. Em `controllers/nav_controller.py`, adicione handler em `_HANDLERS`
+3. Crie o template em `views/ds_{codigo_lower}.html`
+4. Execute o app — `seed_transactions()` inserirá no banco automaticamente
+
+### Adicionar Plugin NDS_*
+
+Veja seção dedicada em [`MANUAL_USUARIO.md`](./MANUAL_USUARIO.md#6-ds_plugins--gerenciador-de-plugins).
+
+---
+
+*DevStation Builder v3.0.4 — Documentação Técnica*  
+*Atualizado em: 2026-05-08*

@@ -1,67 +1,108 @@
 # CHANGELOG — DevStation Builder
 
+## [3.0.4] — 2026-05-08
+
+### Corrigido
+- **Preview**: Botão Preview abria download `.html`; agora abre `preview.html` inline em nova aba com estilo do sistema (barra azul, Bootstrap, indicadores OData)
+- **Rotas duplicadas**: `export_html` e `export_zip` estavam duplicados no `export_controller.py`, causando `AssertionError` no Flask durante os testes de versioning
+- **OData — formulário sem campos**: `grp_h` calculava altura com base no total de campos; corrigido para usar número de **linhas** (`ceil(fields/cols)`), gerando groupboxes com tamanho proporcional correto
+- **OData — largura proporcional**: Colunas de campo tinham largura fixa de 260px; agora calculadas proporcionalmente ao `canvas_w` do projeto (~610px por coluna em canvas 1280px)
+- **Drag de componentes existentes**: Elementos filhos (`<button>`, `<input>`) consumiam `mousedown` antes do container. Adicionado overlay transparente com `z-index:5` sobre cada componente; conteúdo interno com `pointer-events:none`
+- **Toolbar não funcional**: `btnUndo`, `btnRedo`, `btnGrid`, `btnSnap` não tinham listeners em `_bindToolbar()`; todos vinculados e funcionais agora
+- **OData modal no Designer**: `ODataPanel.openNewConnModal()` chamava `new bootstrap.Modal()` mas Bootstrap Bundle não está carregado no Designer; substituído por `modal.style.display = 'flex'`
+- **Dashboard modal sempre aberto**: `style="display:none;...display:flex"` no mesmo atributo — CSS usa último valor; removido o `display:flex` do markup
+
+### Adicionado
+- **Rota `/designer/<pid>/preview/<pgid>`**: Preview inline com template `preview.html` usando Bootstrap 5.3, indicadores visuais de OData binding e botão de volta ao Designer
+- **OData Binding UI melhorado**: Painel Dados com status visual (verde/laranja), texto explicativo, campo de seleção de campo individual, botão ✕ para remover binding
+- **OData Screen Generator**: Lista gerada inclui heading + botão Novo + campo de busca + DataGrid + paginação. Formulário inclui botões Salvar/Cancelar
+- **`generateScreen` interativo**: Solicita nome da página via prompt, oferece navegar para a nova página após geração
+- **`_loadEntitiesForSelect` melhorado**: Carrega campos da entidade para seleção de `field_binding`; exibe tipo de cada campo (TEXT, NUMBER, etc.)
+- **`clearBinding()`**: Botão ✕ para remover binding OData de um componente
+- Documentação completa: `MANUAL_USUARIO.md`, `GUIA_RAPIDO.md`, `REFERENCIA_API.md`
+
+---
+
+## [3.0.3] — 2026-05-08
+
+### Corrigido — OData
+- Descoberta de `$metadata` reescrita com cadeia de fallback inteligente
+- Fase 1: extrai `@odata.context` da resposta do servidor e tenta `{ctx_base}.json`
+- Fase 2: tenta `$metadata.json`, `%24metadata.json`, `metadata.json`
+- Fase 3: variantes XML sem `.json`
+- Parser automático: detecta se resposta é JSON ou XML antes de processar
+- Parse de XML EDMX via `xml.etree.ElementTree` com suporte a namespaces
+- Mapeamento completo `Edm.*` → tipo DSB (`TEXT`, `NUMBER`, `DATE`, `BOOLEAN`)
+
+### Corrigido — Designer
+- Adicionado overlay transparente sobre componentes (fix drag principal)
+- Toolbar completa: undo/redo/grid/snap com feedback visual (fundo azul quando ativo)
+- `designer.js` criado do zero com engine de canvas completa
+
+---
+
+## [3.0.2] — 2026-05-07
+
+### Corrigido
+- `ODataPanel.openNewConnModal()`: substituído `bootstrap.Modal` por JS puro
+- `VersionPanel.openCreateModal()` e `showPurgeSuggestions()`: mesma correção
+- `dashboard.html`: `style="display:none;...display:flex"` no mesmo atributo causava abertura automática do modal
+- Adicionado `var _modalOpen = false` que estava faltando após o `str_replace`
+
+### Adicionado
+- `static/js/designer.js`: engine completa de canvas com drag, resize, seleção, preview por tipo, outline, zoom, undo/redo, atalhos de teclado
+- Rota `/designer/<pid>/<pgid>` para navegação entre páginas
+
+---
+
+## [3.0.1] — 2026-05-07
+
+### Corrigido
+- Rotas de navegação entre páginas no Designer
+
+---
+
 ## [3.0.0] — 2026-05-05
 
 ### Adicionado — Eixo A (OData)
 - Model `ODataConnection` com cache de `$metadata.json` (TTL 5 min)
-- `ODataConnectionManager` — HTTP client OData com suporte a none/basic/bearer
-- `ODataScreenGenerator` — gera páginas (listagem + formulário) a partir de UIAnnotations
-- Aba **OData** no painel esquerdo do Designer com lista de conexões e entidades
-- Aba **Dados** (4ª aba direita) para binding de componentes a endpoints OData
-- Runtime `DSB.odata` injetado no HTML exportado quando binding está configurado
-- `window.DSB_ODATA_CONFIG.baseUrl` configurável no ZIP exportado
-- 5 novos endpoints REST `/api/odata-connections/...`
+- `ODataConnectionManager` — HTTP client com suporte a none/basic/bearer
+- `ODataScreenGenerator` — gera páginas a partir de UIAnnotations
+- Aba OData no painel esquerdo do Designer
+- Aba Dados (4ª aba direita) para binding de componentes
+- Runtime `DSB.odata` injetado no HTML exportado
 
 ### Adicionado — Eixo B (Versionamento)
-- Model `PageVersion` — snapshot completo de página com suporte a soft-delete
-- Model `VersionBackup` — registro imutável de cada arquivo `.dsk` gerado
-- `versioning/snapshot.py` — criação de snapshots automáticos e nomeados
-- `versioning/diff_engine.py` — comparação entre dois snapshots
-- Snapshot automático a cada `save_page` (Ctrl+S no Designer)
-- Snapshot marcado com tag `odata-gen` ao gerar tela via OData
-- Sugestão de purga quando acumulam mais de 10 auto-snapshots por página — **nunca automático**
-- Ao deletar versão: gera `.dsk` obrigatoriamente antes, registra em `VersionBackup`
-- Snapshot `pre-restore` criado automaticamente antes de qualquer restauração
-- Snapshot `pre-reset` criado antes de reset de projeto
-- Aba **Histórico** (`bi-clock-history`) no painel esquerdo do Designer
-- API completa: criar, listar, diff, restaurar, deletar, download `.dsk`
+- Model `PageVersion` com soft-delete e sugestão de purga
+- Model `VersionBackup` — log imutável de cada `.dsk` gerado
+- Auto-snapshot a cada `save_page`
+- Snapshots: `odata-gen`, `pre-restore`, `pre-reset` com tags automáticas
+- Purga NUNCA automática — apenas sugestão ao usuário
+- Backup `.dsk` obrigatório antes de qualquer exclusão
+- Aba Histórico no painel esquerdo do Designer
 
 ### Adicionado — Eixo C (Build)
-- `BuildLog` model com resultado de pytest e metadados do ZIP
-- `POST /api/build/run-tests` — execução assíncrona do pytest via thread
-- `POST /api/build/create-zip` — ZIP de distribuição (requer build verde)
-- `DS_BUILD` — tela de pipeline com histórico de builds e download de ZIPs
-- Suite de 58 testes cobrindo todos os módulos
+- `BuildLog` model com output pytest e metadados do ZIP
+- Pipeline assíncrono via thread + polling
+- `DS_BUILD` — tela com histórico, output e download de ZIPs
 
 ### Adicionado — Eixo D (Navegação)
-- Model `Transaction` com catálogo seed de 11 transações `DS_*`
-- `transactions/registry.py` — seed automático + descoberta de plugins
-- Campo de transação no header de todas as telas com autocomplete
-- Atalho global `Ctrl+F5` para focar o campo de transação
-- `DS_HOME` — substitui dashboard: launchpad com abas Transações/Projetos/Plugins/Addons
-- `transaction_nav.js` — autocomplete, histórico localStorage, renderização do launchpad
-- `DS_PLUGINS` — lista plugins descobertos, ativa/desativa com confirmação
-- `DS_ADDONS` — upload, instalação passo a passo, ativação, log imutável
-- Plugins escaneados de `plugins/` registrados no banco (inativos por padrão)
-- Addons nunca instalados automaticamente — cada passo requer `confirmed: true`
-- Rota `GET /transacoes/<CODE>` com handlers para cada transação nativa
-
-### Alterado
-- `save_page` agora gera auto-snapshot após cada salvamento
-- `dashboard.html` substituído por `DS_HOME` com launchpad multi-aba
-- `base.html` agora inclui campo de transação global e transaction_nav.js
-- `DEFAULT_MAIN_MENU` atualizado com entradas para DS_MENU e DS_BUILD
-- `DEFAULT_SIDEBAR` atualizado com abas OData e Histórico
+- 11 transações `DS_*` seedadas no banco
+- Campo de transação global em todas as telas (`Ctrl+F5`)
+- `DS_HOME` substitui dashboard: launchpad com abas
+- `DS_PLUGINS` com descoberta automática + ativação manual
+- `DS_ADDONS` com pipeline de instalação confirmada e log imutável
+- `transaction_nav.js` — autocomplete, histórico localStorage, launchpad
 
 ---
 
-## [2.2.0] — 2025 (baseline)
+## [2.2.0] — 2025 (baseline v2.2)
 
 - Designer visual drag & drop completo
-- 36 componentes em 7 grupos
-- Layers Panel, multi-select, rubber-band
-- Template gallery, responsive preview
-- Event editor, rules editor
-- Code export generators (HTML/CSS/JS)
+- 36 componentes em 7 grupos via `ComponentRegistry`
+- Layers Panel, multi-select, rubber-band selection
+- Template gallery (5 templates), responsive preview
+- Event editor e rules editor
+- Code export generators (HTML/CSS/JS standalone)
 - `base.html` totalmente self-contained (sem dependência NiceAdmin)
-- Suite de documentação Mermaid em `docs/`
+- Suite de 16 documentos Mermaid em `docs/`
