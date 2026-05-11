@@ -6,8 +6,9 @@ modelos, seed de transações e descoberta de plugins.
 """
 
 from flask import Flask
-from models import db
+
 from config import Config
+from models import db
 
 
 def create_app(test_config: dict = None) -> Flask:
@@ -30,11 +31,13 @@ def create_app(test_config: dict = None) -> Flask:
 
     # ── Blueprints ────────────────────────────────────────────────
     from controllers import register_blueprints
+
     register_blueprints(app)
 
     # ── Seed inicial de transações DS_* ───────────────────────────
     with app.app_context():
-        from transactions.registry import seed_transactions, discover_plugins
+        from transactions.registry import discover_plugins, seed_transactions
+
         seed_transactions(app)
         discover_plugins(app)
 

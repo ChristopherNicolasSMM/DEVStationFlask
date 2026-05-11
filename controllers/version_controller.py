@@ -13,16 +13,18 @@ controllers/version_controller.py — API de Versionamento
 """
 
 import os
+
 from flask import Blueprint, jsonify, request, send_file
-from models import db, Page, Project, PageVersion, VersionBackup
-from versioning import (create_named_snapshot, restore_snapshot,
-                        delete_version_with_backup, get_purge_suggestions,
-                        diff_versions)
+
+from models import Page, PageVersion, Project, VersionBackup, db
+from versioning import (create_named_snapshot, delete_version_with_backup,
+                        diff_versions, get_purge_suggestions, restore_snapshot)
 
 bp = Blueprint("version", __name__)
 
 
 # ── Listar versões ────────────────────────────────────────────────────────────
+
 
 @bp.route("/api/paginas/<int:pgid>/versoes")
 def list_versions(pgid: int):
@@ -38,6 +40,7 @@ def list_versions(pgid: int):
 
 
 # ── Criar versão nomeada ──────────────────────────────────────────────────────
+
 
 @bp.route("/api/paginas/<int:pgid>/versoes", methods=["POST"])
 def create_version(pgid: int):
@@ -60,6 +63,7 @@ def create_version(pgid: int):
 
 # ── Detalhe de uma versão ─────────────────────────────────────────────────────
 
+
 @bp.route("/api/versoes/<int:vid>")
 def get_version(vid: int):
     version = PageVersion.query.get_or_404(vid)
@@ -68,6 +72,7 @@ def get_version(vid: int):
 
 
 # ── Diff entre duas versões ───────────────────────────────────────────────────
+
 
 @bp.route("/api/versoes/diff")
 def diff_two_versions():
@@ -91,13 +96,14 @@ def diff_two_versions():
 
 # ── Restaurar versão ──────────────────────────────────────────────────────────
 
+
 @bp.route("/api/versoes/<int:vid>/restaurar", methods=["POST"])
 def restore_version(vid: int):
     """
     Restaura a página para o estado desta versão.
     Cria automaticamente snapshot pré-restauração.
     """
-    data   = request.get_json(force=True) or {}
+    data = request.get_json(force=True) or {}
     author = data.get("triggered_by", "usuario")
 
     result = restore_snapshot(vid, triggered_by=author)
@@ -106,13 +112,14 @@ def restore_version(vid: int):
 
 # ── Deletar versão (com .dsk obrigatório) ─────────────────────────────────────
 
+
 @bp.route("/api/versoes/<int:vid>", methods=["DELETE"])
 def delete_version(vid: int):
     """
     Deleta versão APÓS gerar backup .dsk.
     O backup fica registrado em VersionBackup.
     """
-    data   = request.get_json(force=True) or {}
+    data = request.get_json(force=True) or {}
     author = data.get("triggered_by", "usuario")
 
     result = delete_version_with_backup(vid, triggered_by=author)
@@ -123,6 +130,7 @@ def delete_version(vid: int):
 
 # ── Sugestões de purga ────────────────────────────────────────────────────────
 
+
 @bp.route("/api/paginas/<int:pgid>/versoes/sugestoes-purga")
 def purge_suggestions(pgid: int):
     Page.query.get_or_404(pgid)
@@ -131,6 +139,7 @@ def purge_suggestions(pgid: int):
 
 
 # ── Reset de projeto ──────────────────────────────────────────────────────────
+
 
 @bp.route("/api/projetos/<int:pid>/reset", methods=["POST"])
 def project_reset(pid: int):
@@ -149,25 +158,27 @@ def project_reset(pid: int):
     Antes de qualquer restauração, cria snapshots pré-reset em todas as páginas.
     """
     project = Project.query.get_or_404(pid)
-    data    = request.get_json(force=True) or {}
-    pages   = data.get("pages", [])
-    author  = data.get("triggered_by", "usuario")
+    data = request.get_json(force=True) or {}
+    pages = data.get("pages", [])
+    author = data.get("triggered_by", "usuario")
 
     if not pages:
         return jsonify({"error": "Forneça ao menos uma página para restaurar"}), 400
 
-    results      = []
+    results = []
     pre_snapshots = []
 
     for entry in pages:
-        page_id    = entry.get("page_id")
+        page_id = entry.get("page_id")
         version_id = entry.get("version_id")
         if not page_id or not version_id:
             continue
 
         page = Page.query.get(page_id)
         if not page or page.project_id != pid:
-            results.append({"page_id": page_id, "ok": False, "error": "Página não encontrada"})
+            results.append(
+                {"page_id": page_id, "ok": False, "error": "Página não encontrada"}
+            )
             continue
 
         result = restore_snapshot(version_id, triggered_by=author)
@@ -178,13 +189,15 @@ def project_reset(pid: int):
 
 # ── Backups .dsk ──────────────────────────────────────────────────────────────
 
+
 @bp.route("/api/versoes/backups/<int:project_id>")
 def list_backups(project_id: int):
     Project.query.get_or_404(project_id)
-    backups = (VersionBackup.query
-               .filter_by(project_id=project_id)
-               .order_by(VersionBackup.created_at.desc())
-               .all())
+    backups = (
+        VersionBackup.query.filter_by(project_id=project_id)
+        .order_by(VersionBackup.created_at.desc())
+        .all()
+    )
     return jsonify([b.to_dict() for b in backups])
 
 

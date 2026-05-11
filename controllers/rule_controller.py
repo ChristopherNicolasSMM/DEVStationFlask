@@ -1,7 +1,11 @@
 """controllers/rule_controller.py"""
+
 from flask import Blueprint, jsonify, request
-from models import db, Component
+
+from models import Component, db
+
 bp = Blueprint("rule", __name__)
+
 
 @bp.route("/api/componentes/<int:cid>/regras", methods=["PUT"])
 def save_rules(cid):

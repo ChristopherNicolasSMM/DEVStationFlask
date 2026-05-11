@@ -11,28 +11,31 @@ Regras:
  - O backup fica registrado em VersionBackup para rastreabilidade.
 """
 
-import io
-import os
-import json
-import zipfile
 import datetime
+import io
+import json
 import logging
+import os
+import zipfile
 
 log = logging.getLogger(__name__)
 
 
 # ── Criação de snapshots ─────────────────────────────────────
 
-def create_auto_snapshot(page, tags: list = None, author: str = "sistema") -> "PageVersion":
+
+def create_auto_snapshot(
+    page, tags: list = None, author: str = "sistema"
+) -> "PageVersion":
     """
     Cria snapshot automático de uma página após save.
     Após criação, marca sugestão de purga se necessário.
     """
-    from models import db, PageVersion
     from config import Config
+    from models import PageVersion, db
 
-    label   = f"auto_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
-    snap    = page.to_dict(include_components=True)
+    label = f"auto_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    snap = page.to_dict(include_components=True)
     version = PageVersion(
         page_id=page.id,
         project_id=page.project_id,
@@ -52,12 +55,13 @@ def create_auto_snapshot(page, tags: list = None, author: str = "sistema") -> "P
     return version
 
 
-def create_named_snapshot(page, label: str, description: str = "",
-                          author: str = "usuario", tags: list = None) -> "PageVersion":
+def create_named_snapshot(
+    page, label: str, description: str = "", author: str = "usuario", tags: list = None
+) -> "PageVersion":
     """Cria versão nomeada manualmente pelo desenvolvedor."""
-    from models import db, PageVersion
+    from models import PageVersion, db
 
-    snap    = page.to_dict(include_components=True)
+    snap = page.to_dict(include_components=True)
     version = PageVersion(
         page_id=page.id,
         project_id=page.project_id,
@@ -76,6 +80,7 @@ def create_named_snapshot(page, label: str, description: str = "",
 
 # ── Restauração ──────────────────────────────────────────────
 
+
 def restore_snapshot(version_id: int, triggered_by: str = "usuario") -> dict:
     """
     Restaura uma página para o estado de uma versão anterior.
@@ -84,10 +89,10 @@ def restore_snapshot(version_id: int, triggered_by: str = "usuario") -> dict:
     Returns:
         {"ok": True, "pre_restore_version_id": N}
     """
-    from models import db, PageVersion, Page, Component
+    from models import Component, Page, PageVersion, db
 
     version = PageVersion.query.get_or_404(version_id)
-    page    = Page.query.get_or_404(version.page_id)
+    page = Page.query.get_or_404(version.page_id)
 
     # 1. Snapshot pré-restauração
     pre = create_named_snapshot(
@@ -129,8 +134,10 @@ def restore_snapshot(version_id: int, triggered_by: str = "usuario") -> dict:
 
 # ── Purga com backup .dsk ────────────────────────────────────
 
-def delete_version_with_backup(version_id: int, triggered_by: str = "usuario",
-                                backup_dir: str = None) -> dict:
+
+def delete_version_with_backup(
+    version_id: int, triggered_by: str = "usuario", backup_dir: str = None
+) -> dict:
     """
     Deleta uma versão APÓS gerar backup .dsk.
     1. Gera arquivo ZIP com os dados da versão
@@ -141,8 +148,8 @@ def delete_version_with_backup(version_id: int, triggered_by: str = "usuario",
     Returns:
         {"ok": True, "backup_path": "...", "backup_name": "..."}
     """
-    from models import db, PageVersion, VersionBackup
     from config import Config
+    from models import PageVersion, VersionBackup, db
 
     version = PageVersion.query.get(version_id)
     if not version:
@@ -154,16 +161,17 @@ def delete_version_with_backup(version_id: int, triggered_by: str = "usuario",
     # 1. Define diretório de backup
     if not backup_dir:
         backup_dir = os.path.join(
-            os.path.abspath(os.path.dirname(__file__) + "/../"),
-            "dist", "backups"
+            os.path.abspath(os.path.dirname(__file__) + "/../"), "dist", "backups"
         )
     os.makedirs(backup_dir, exist_ok=True)
 
     # 2. Gera nome do arquivo .dsk
-    ts         = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    page_slug  = str(version.page_id)
-    bk_name    = f"version_page{page_slug}_{version.version_label}_{ts}{Config.DSK_EXTENSION}"
-    bk_path    = os.path.join(backup_dir, bk_name)
+    ts = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    page_slug = str(version.page_id)
+    bk_name = (
+        f"version_page{page_slug}_{version.version_label}_{ts}{Config.DSK_EXTENSION}"
+    )
+    bk_path = os.path.join(backup_dir, bk_name)
 
     # 3. Cria o arquivo .dsk (ZIP com conteúdo JSON da versão)
     payload = {
@@ -178,13 +186,15 @@ def delete_version_with_backup(version_id: int, triggered_by: str = "usuario",
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("version.json", json.dumps(payload, ensure_ascii=False, indent=2))
-        zf.writestr("README.txt",
-                    f"DevStation Backup (.dsk)\n"
-                    f"Versão: {version.version_label}\n"
-                    f"Página ID: {version.page_id}\n"
-                    f"Gerado em: {datetime.datetime.utcnow()}\n"
-                    f"Gerado por: {triggered_by}\n"
-                    f"Restaure usando DS_VERSIONS → Importar Backup\n")
+        zf.writestr(
+            "README.txt",
+            f"DevStation Backup (.dsk)\n"
+            f"Versão: {version.version_label}\n"
+            f"Página ID: {version.page_id}\n"
+            f"Gerado em: {datetime.datetime.utcnow()}\n"
+            f"Gerado por: {triggered_by}\n"
+            f"Restaure usando DS_VERSIONS → Importar Backup\n",
+        )
     bk_bytes = buf.getvalue()
     with open(bk_path, "wb") as f:
         f.write(bk_bytes)
@@ -203,17 +213,23 @@ def delete_version_with_backup(version_id: int, triggered_by: str = "usuario",
     db.session.add(bk_record)
 
     # 5. Soft-delete da versão
-    version.deleted    = True
+    version.deleted = True
     version.deleted_at = datetime.datetime.utcnow()
     version.deleted_by = triggered_by
     version.backup_path = bk_path
 
     db.session.commit()
     log.info("Versão %s deletada → backup: %s", version_id, bk_name)
-    return {"ok": True, "backup_path": bk_path, "backup_name": bk_name, "size_bytes": len(bk_bytes)}
+    return {
+        "ok": True,
+        "backup_path": bk_path,
+        "backup_name": bk_name,
+        "size_bytes": len(bk_bytes),
+    }
 
 
 # ── Sugestão de purga ────────────────────────────────────────
+
 
 def _suggest_purge_if_needed(page, threshold: int) -> None:
     """
@@ -223,8 +239,9 @@ def _suggest_purge_if_needed(page, threshold: int) -> None:
     from models import PageVersion
 
     auto_versions = (
-        PageVersion.query
-        .filter_by(page_id=page.id, is_auto=True, deleted=False, purge_suggested=False)
+        PageVersion.query.filter_by(
+            page_id=page.id, is_auto=True, deleted=False, purge_suggested=False
+        )
         .order_by(PageVersion.created_at.asc())
         .all()
     )
@@ -235,13 +252,14 @@ def _suggest_purge_if_needed(page, threshold: int) -> None:
     # Sugere purga nas mais antigas
     for v in auto_versions[:excess]:
         v.purge_suggested = True
-        v.purge_reason    = (
+        v.purge_reason = (
             f"Sugerido: existem mais de {threshold} snapshots automáticos "
             f"desta página. Revise e confirme manualmente."
         )
     log.info(
         "%d snapshot(s) automático(s) da página %s marcados como sugeridos para purga.",
-        excess, page.id
+        excess,
+        page.id,
     )
 
 
@@ -250,8 +268,9 @@ def get_purge_suggestions(page_id: int) -> list[dict]:
     from models import PageVersion
 
     versions = (
-        PageVersion.query
-        .filter_by(page_id=page_id, purge_suggested=True, deleted=False)
+        PageVersion.query.filter_by(
+            page_id=page_id, purge_suggested=True, deleted=False
+        )
         .order_by(PageVersion.created_at.asc())
         .all()
     )

@@ -25,7 +25,7 @@ class HtmlGenerator:
 
     def __init__(self, project, page):
         self.project = project
-        self.page    = page
+        self.page = page
 
     def render(self, inline_css: bool = True, inline_js: bool = True) -> str:
         """
@@ -34,8 +34,8 @@ class HtmlGenerator:
         inline_js:  embute JS;  False = link para app.js
         """
         title = self.page.title or self.page.name or self.project.name
-        w  = self.page.canvas_w  or self.project.canvas_w  or 1280
-        h  = self.page.canvas_h  or self.project.canvas_h  or 900
+        w = self.page.canvas_w or self.project.canvas_w or 1280
+        h = self.page.canvas_h or self.project.canvas_h or 900
         bg = self.page.canvas_bg or self.project.canvas_bg or "#ffffff"
 
         # Renderiza cada componente
@@ -149,7 +149,10 @@ body {{
 
     def _build_page_js(self) -> str:
         """JS de eventos e regras de cada componente."""
-        lines = ["// Eventos e Regras — DevStation Builder", "document.addEventListener('DOMContentLoaded', () => {"]
+        lines = [
+            "// Eventos e Regras — DevStation Builder",
+            "document.addEventListener('DOMContentLoaded', () => {",
+        ]
         for c in self.page.components:
             js = ComponentRegistry.render_js(c)
             if js.strip():

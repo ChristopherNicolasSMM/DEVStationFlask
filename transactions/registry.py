@@ -7,9 +7,9 @@ Responsável por:
  3. Apenas plugins com is_active=True no banco são efetivamente carregados
 """
 
-import os
 import importlib
 import logging
+import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 def seed_transactions(app) -> None:
     """Insere as transações DS_* se ainda não existirem no banco."""
-    from models import db, Transaction
+    from models import Transaction, db
     from transactions.catalog import DS_TRANSACTIONS
 
     with app.app_context():
@@ -39,8 +39,8 @@ def discover_plugins(app) -> None:
     Se o plugin já existe no banco, apenas atualiza metadados de descoberta.
     Plugins marcados como is_active=True no banco são então importados.
     """
-    from models import db, Plugin, Transaction
     from config import Config
+    from models import Plugin, Transaction, db
 
     plugins_dir = Config.PLUGINS_DIR
     if not os.path.isdir(plugins_dir):
@@ -57,10 +57,11 @@ def discover_plugins(app) -> None:
                 continue
 
             import json
+
             with open(manifest_path, "r", encoding="utf-8") as f:
                 manifest = json.load(f)
 
-            code   = manifest.get("code", entry.name)
+            code = manifest.get("code", entry.name)
             plugin = Plugin.query.filter_by(code=code).first()
 
             if not plugin:
@@ -81,11 +82,13 @@ def discover_plugins(app) -> None:
                 log.info("Plugin descoberto (inativo): %s", code)
             else:
                 # Atualiza metadados mas preserva is_active do banco
-                plugin.name              = manifest.get("name", code)
-                plugin.description       = manifest.get("description", plugin.description)
-                plugin.version           = manifest.get("version", plugin.version)
-                plugin.folder_path       = entry.path
-                plugin.transaction_codes = manifest.get("transactions", plugin.transaction_codes)
+                plugin.name = manifest.get("name", code)
+                plugin.description = manifest.get("description", plugin.description)
+                plugin.version = manifest.get("version", plugin.version)
+                plugin.folder_path = entry.path
+                plugin.transaction_codes = manifest.get(
+                    "transactions", plugin.transaction_codes
+                )
 
         db.session.commit()
 
@@ -123,7 +126,11 @@ def _load_plugin(plugin, db) -> None:
                     plugin_code=plugin.code,
                 )
                 db.session.add(tx)
-                log.info("Transação NDS_ registrada: %s (plugin: %s)", tx_data["code"], plugin.code)
+                log.info(
+                    "Transação NDS_ registrada: %s (plugin: %s)",
+                    tx_data["code"],
+                    plugin.code,
+                )
 
     except Exception as exc:
         log.error("Erro ao carregar plugin %s: %s", plugin.code, exc)

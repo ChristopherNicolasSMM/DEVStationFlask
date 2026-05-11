@@ -26,7 +26,7 @@ class CssGenerator:
         return "\n".join(parts)
 
     def _base_css(self) -> str:
-        w  = self.project.canvas_w  or 1280
+        w = self.project.canvas_w or 1280
         bg = self.project.canvas_bg or "#ffffff"
         return f"""
 /* DevStation Builder — style.css */

@@ -12,56 +12,69 @@ Para registrar um novo componente:
 """
 
 from typing import Dict, Optional
+
 from .base_component import BaseComponent
-from .definitions import (
-    # Entrada
-    ButtonComponent, TextBoxComponent, TextAreaComponent, NumberBoxComponent,
-    CheckBoxComponent, RadioButtonComponent, ComboBoxComponent, SwitchComponent,
-    SliderComponent, DatePickerComponent, RatingComponent, FileUploadComponent,
-    # Visualização
-    LabelComponent, HeadingComponent, ImageComponent, IconComponent,
-    BadgeComponent, ProgressBarComponent, StatusBarComponent,
-    SeparatorComponent, SpinnerComponent,
-    # Container
-    PanelComponent, CardComponent, GroupBoxComponent, TabsComponent,
-    AccordionComponent,
-    # Dados
-    DataGridComponent, ChartComponent, PaginationComponent,
-    # Feedback
-    AlertComponent, ModalComponent,
-    # Navegação
-    NavbarComponent, BreadcrumbComponent, StepperComponent,
-    # Tempo
-    TimerComponent, CountdownComponent,
-)
+from .definitions import (  # Entrada; Visualização; Container; Dados; Feedback; Navegação; Tempo
+    AccordionComponent, AlertComponent, BadgeComponent, BreadcrumbComponent,
+    ButtonComponent, CardComponent, ChartComponent, CheckBoxComponent,
+    ComboBoxComponent, CountdownComponent, DataGridComponent,
+    DatePickerComponent, FileUploadComponent, GroupBoxComponent,
+    HeadingComponent, IconComponent, ImageComponent, LabelComponent,
+    ModalComponent, NavbarComponent, NumberBoxComponent, PaginationComponent,
+    PanelComponent, ProgressBarComponent, RadioButtonComponent,
+    RatingComponent, SeparatorComponent, SliderComponent, SpinnerComponent,
+    StatusBarComponent, StepperComponent, SwitchComponent, TabsComponent,
+    TextAreaComponent, TextBoxComponent, TimerComponent)
 
 # ── Lista ordenada de todos os componentes disponíveis ────────
 _COMPONENTS_LIST = [
     # Entrada
-    ButtonComponent(), TextBoxComponent(), TextAreaComponent(), NumberBoxComponent(),
-    CheckBoxComponent(), RadioButtonComponent(), ComboBoxComponent(), SwitchComponent(),
-    SliderComponent(), DatePickerComponent(), RatingComponent(), FileUploadComponent(),
+    ButtonComponent(),
+    TextBoxComponent(),
+    TextAreaComponent(),
+    NumberBoxComponent(),
+    CheckBoxComponent(),
+    RadioButtonComponent(),
+    ComboBoxComponent(),
+    SwitchComponent(),
+    SliderComponent(),
+    DatePickerComponent(),
+    RatingComponent(),
+    FileUploadComponent(),
     # Visualização
-    LabelComponent(), HeadingComponent(), ImageComponent(), IconComponent(),
-    BadgeComponent(), ProgressBarComponent(), StatusBarComponent(),
-    SeparatorComponent(), SpinnerComponent(),
+    LabelComponent(),
+    HeadingComponent(),
+    ImageComponent(),
+    IconComponent(),
+    BadgeComponent(),
+    ProgressBarComponent(),
+    StatusBarComponent(),
+    SeparatorComponent(),
+    SpinnerComponent(),
     # Container
-    PanelComponent(), CardComponent(), GroupBoxComponent(), TabsComponent(),
+    PanelComponent(),
+    CardComponent(),
+    GroupBoxComponent(),
+    TabsComponent(),
     AccordionComponent(),
     # Dados
-    DataGridComponent(), ChartComponent(), PaginationComponent(),
+    DataGridComponent(),
+    ChartComponent(),
+    PaginationComponent(),
     # Feedback
-    AlertComponent(), ModalComponent(),
+    AlertComponent(),
+    ModalComponent(),
     # Navegação
-    NavbarComponent(), BreadcrumbComponent(), StepperComponent(),
+    NavbarComponent(),
+    BreadcrumbComponent(),
+    StepperComponent(),
     # Tempo
-    TimerComponent(), CountdownComponent(),
+    TimerComponent(),
+    CountdownComponent(),
 ]
 
 # ── Dicionário type → instância (para lookups rápidos) ────────
-_REGISTRY: Dict[str, BaseComponent] = {
-    c.type: c for c in _COMPONENTS_LIST
-}
+_REGISTRY: Dict[str, BaseComponent] = {c.type: c for c in _COMPONENTS_LIST}
 
 
 class ComponentRegistry:
@@ -114,21 +127,21 @@ class ComponentRegistry:
             # Fallback: caixa vazia com aviso
             return (
                 f'<div id="comp_{comp_model.id}" style="position:absolute;'
-                f'left:{comp_model.x}px;top:{comp_model.y}px;'
-                f'width:{comp_model.width}px;height:{comp_model.height}px;'
-                f'border:2px dashed #f00;display:flex;align-items:center;'
+                f"left:{comp_model.x}px;top:{comp_model.y}px;"
+                f"width:{comp_model.width}px;height:{comp_model.height}px;"
+                f"border:2px dashed #f00;display:flex;align-items:center;"
                 f'justify-content:center;font-size:12px;color:#f00;">'
-                f'Tipo desconhecido: {comp_model.type}</div>'
+                f"Tipo desconhecido: {comp_model.type}</div>"
             )
         return instance.render_html(
-            comp_id = f"comp_{comp_model.id}",
-            name    = comp_model.name or f"comp_{comp_model.id}",
-            props   = comp_model.properties or {},
-            x       = comp_model.x,
-            y       = comp_model.y,
-            width   = comp_model.width,
-            height  = comp_model.height,
-            z_index = comp_model.z_index,
+            comp_id=f"comp_{comp_model.id}",
+            name=comp_model.name or f"comp_{comp_model.id}",
+            props=comp_model.properties or {},
+            x=comp_model.x,
+            y=comp_model.y,
+            width=comp_model.width,
+            height=comp_model.height,
+            z_index=comp_model.z_index,
         )
 
     @staticmethod
@@ -138,9 +151,9 @@ class ComponentRegistry:
         if not instance:
             return ""
         return instance.render_js(
-            comp_id = f"comp_{comp_model.id}",
-            events  = comp_model.events or {},
-            rules   = comp_model.rules  or [],
+            comp_id=f"comp_{comp_model.id}",
+            events=comp_model.events or {},
+            rules=comp_model.rules or [],
         )
 
     @staticmethod
@@ -150,6 +163,6 @@ class ComponentRegistry:
         if not instance:
             return ""
         return instance.render_css(
-            comp_id = f"comp_{comp_model.id}",
-            props   = comp_model.properties or {},
+            comp_id=f"comp_{comp_model.id}",
+            props=comp_model.properties or {},
         )

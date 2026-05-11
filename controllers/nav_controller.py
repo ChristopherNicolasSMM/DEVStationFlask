@@ -16,13 +16,16 @@ Serve o DS_HOME (launchpad) que substitui o dashboard tradicional.
   GET  /transacoes/DS_AUDIT       → console de auditoria (stub)
 """
 
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-from models import Project, Transaction, PageVersion, BuildLog, Plugin, Addon
+from flask import (Blueprint, jsonify, redirect, render_template, request,
+                   url_for)
+
+from models import Addon, BuildLog, PageVersion, Plugin, Project, Transaction
 
 bp = Blueprint("nav", __name__)
 
 
 # ── DS_HOME — substitui o dashboard ──────────────────────────────────────────
+
 
 @bp.route("/")
 def home():
@@ -30,11 +33,13 @@ def home():
     DS_HOME: launchpad que unifica projetos, transações e favoritos.
     Substituiu o dashboard simples da v2.2.
     """
-    projects    = Project.query.order_by(Project.updated_at.desc()).all()
-    tab         = request.args.get("tab", "home")     # home | projects | plugins | addons | favorites
-    tx_groups   = _get_tx_groups()
-    plugins     = Plugin.query.filter_by(is_active=True).all()
-    addons      = Addon.query.filter_by(is_active=True).all()
+    projects = Project.query.order_by(Project.updated_at.desc()).all()
+    tab = request.args.get(
+        "tab", "home"
+    )  # home | projects | plugins | addons | favorites
+    tx_groups = _get_tx_groups()
+    plugins = Plugin.query.filter_by(is_active=True).all()
+    addons = Addon.query.filter_by(is_active=True).all()
 
     return render_template(
         "dashboard.html",
@@ -49,6 +54,7 @@ def home():
 
 # ── Navegação por código ──────────────────────────────────────────────────────
 
+
 @bp.route("/transacoes/<string:code>")
 def navigate(code: str):
     """Navega para a tela de uma transação pelo código."""
@@ -59,13 +65,13 @@ def navigate(code: str):
     # Mapeamento de rotas para views internas
     _HANDLERS = {
         "DS_VERSIONS": _view_versions,
-        "DS_PLUGINS":  _view_plugins,
-        "DS_ADDONS":   _view_addons,
-        "DS_BUILD":    _view_build,
-        "DS_MENU":     _view_menu_editor,
-        "DS_ODATA":    _view_odata_overview,
-        "DS_AUDIT":    _view_audit,
-        "DS_USERS":    _view_users,
+        "DS_PLUGINS": _view_plugins,
+        "DS_ADDONS": _view_addons,
+        "DS_BUILD": _view_build,
+        "DS_MENU": _view_menu_editor,
+        "DS_ODATA": _view_odata_overview,
+        "DS_AUDIT": _view_audit,
+        "DS_USERS": _view_users,
     }
 
     handler = _HANDLERS.get(code)
@@ -84,11 +90,12 @@ def navigate(code: str):
 
 # ── API ───────────────────────────────────────────────────────────────────────
 
+
 @bp.route("/api/transacoes")
 def list_transactions():
     """Lista transações com suporte a busca por q= (código ou label)."""
-    q       = (request.args.get("q") or "").strip().lower()
-    active  = request.args.get("active", "1") == "1"
+    q = (request.args.get("q") or "").strip().lower()
+    active = request.args.get("active", "1") == "1"
 
     query = Transaction.query
     if active:
@@ -114,37 +121,51 @@ def get_transaction(code: str):
 
 # ── Sub-views internas ────────────────────────────────────────────────────────
 
+
 def _view_versions():
     from models import PageVersion, Project
+
     projects = Project.query.order_by(Project.name).all()
-    recent   = (PageVersion.query.filter_by(deleted=False)
-                .order_by(PageVersion.created_at.desc()).limit(50).all())
-    return render_template("ds_versions.html", projects=projects, recent_versions=recent)
+    recent = (
+        PageVersion.query.filter_by(deleted=False)
+        .order_by(PageVersion.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return render_template(
+        "ds_versions.html", projects=projects, recent_versions=recent
+    )
 
 
 def _view_plugins():
-    plugins_all  = Plugin.query.order_by(Plugin.name).all()
+    plugins_all = Plugin.query.order_by(Plugin.name).all()
     return render_template("ds_plugins.html", plugins=plugins_all)
 
 
 def _view_addons():
-    addons_all  = Addon.query.order_by(Addon.name).all()
+    addons_all = Addon.query.order_by(Addon.name).all()
     return render_template("ds_addons.html", addons=addons_all)
 
 
 def _view_build():
     from models import BuildLog
+
     logs = BuildLog.query.order_by(BuildLog.started_at.desc()).limit(20).all()
     return render_template("ds_build.html", build_logs=logs)
 
 
 def _view_menu_editor():
     projects = Project.query.order_by(Project.updated_at.desc()).all()
-    pid      = request.args.get("pid", type=int)
-    project  = Project.query.get(pid) if pid else (projects[0] if projects else None)
+    pid = request.args.get("pid", type=int)
+    project = Project.query.get(pid) if pid else (projects[0] if projects else None)
     from models import Menu
-    menu_main = next((m for m in project.menus if m.type == "main"), None) if project else None
-    return render_template("ds_menu_editor.html", project=project, projects=projects, menu=menu_main)
+
+    menu_main = (
+        next((m for m in project.menus if m.type == "main"), None) if project else None
+    )
+    return render_template(
+        "ds_menu_editor.html", project=project, projects=projects, menu=menu_main
+    )
 
 
 def _view_odata_overview():
@@ -162,10 +183,12 @@ def _view_users():
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def _get_tx_groups() -> dict:
     """Agrupa transações ativas por grupo."""
     from sqlalchemy import or_ as _or
-    txs    = Transaction.query.filter_by(is_active=True).order_by(Transaction.code).all()
+
+    txs = Transaction.query.filter_by(is_active=True).order_by(Transaction.code).all()
     groups = {}
     for tx in txs:
         groups.setdefault(tx.group, []).append(tx.to_dict())

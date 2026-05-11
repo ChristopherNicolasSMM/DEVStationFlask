@@ -1,6 +1,7 @@
 """
 tests/test_transactions.py — Testes de Navegação por Transações v3.0
 """
+
 import pytest
 
 
@@ -9,8 +10,16 @@ class TestTransactionCatalog:
         r = client.get("/api/transacoes")
         assert r.status_code == 200
         codes = [t["code"] for t in r.get_json()]
-        required = ["DS_HOME", "DS_DESIGNER", "DS_ODATA", "DS_VERSIONS",
-                    "DS_BUILD", "DS_PLUGINS", "DS_ADDONS", "DS_MENU"]
+        required = [
+            "DS_HOME",
+            "DS_DESIGNER",
+            "DS_ODATA",
+            "DS_VERSIONS",
+            "DS_BUILD",
+            "DS_PLUGINS",
+            "DS_ADDONS",
+            "DS_MENU",
+        ]
         for code in required:
             assert code in codes, f"Transação {code} não encontrada"
 
@@ -37,26 +46,26 @@ class TestTransactionCatalog:
         assert r.status_code == 404
 
     def test_transactions_have_routes(self, client):
-        r    = client.get("/api/transacoes")
-        txs  = r.get_json()
+        r = client.get("/api/transacoes")
+        txs = r.get_json()
         for tx in txs:
             assert tx["route"], f"Transação {tx['code']} sem rota definida"
 
     def test_transactions_have_icons(self, client):
-        r   = client.get("/api/transacoes")
+        r = client.get("/api/transacoes")
         txs = r.get_json()
         for tx in txs:
             assert tx["icon"], f"Transação {tx['code']} sem ícone"
 
     def test_transactions_grouped(self, client):
-        r      = client.get("/api/transacoes")
-        txs    = r.get_json()
+        r = client.get("/api/transacoes")
+        txs = r.get_json()
         groups = set(t["group"] for t in txs)
-        assert "Core"        in groups
-        assert "Design"      in groups
+        assert "Core" in groups
+        assert "Design" in groups
         assert "Integration" in groups
-        assert "DevOps"      in groups
-        assert "Platform"    in groups
+        assert "DevOps" in groups
+        assert "Platform" in groups
 
 
 class TestNavigation:
@@ -86,7 +95,8 @@ class TestNavigation:
 
     def test_navigate_inactive_transaction(self, client, app):
         """Transação inativa não deve ser acessível via /transacoes/<code>."""
-        from models import db, Transaction
+        from models import Transaction, db
+
         with app.app_context():
             tx = Transaction.query.filter_by(code="DS_AUDIT").first()
             if tx:

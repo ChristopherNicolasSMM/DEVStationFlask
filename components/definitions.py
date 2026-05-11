@@ -16,50 +16,60 @@ Grupos:
 """
 
 from typing import Any, Dict, List
-from .base_component import BaseComponent
 
+from .base_component import BaseComponent
 
 # ═══════════════════════════════════════════════════════════════
 #  ENTRADA
 # ═══════════════════════════════════════════════════════════════
 
+
 class ButtonComponent(BaseComponent):
-    type  = "button"
+    type = "button"
     label = "Botão"
-    icon  = "bi-app"
+    icon = "bi-app"
     group = "Entrada"
 
     @property
     def default_properties(self):
         return {
-            "text":       "Botão",
-            "variant":    "primary",       # primary|secondary|success|danger|warning|info|light|dark|outline-primary
-            "size":       "md",            # sm|md|lg
-            "icon":       "",              # bi-save, bi-trash …
-            "icon_pos":   "left",          # left|right
-            "disabled":   False,
+            "text": "Botão",
+            "variant": "primary",  # primary|secondary|success|danger|warning|info|light|dark|outline-primary
+            "size": "md",  # sm|md|lg
+            "icon": "",  # bi-save, bi-trash …
+            "icon_pos": "left",  # left|right
+            "disabled": False,
             "full_width": False,
             "border_radius": 4,
-            "bg_color":   "#4154f1",
+            "bg_color": "#4154f1",
             "text_color": "#ffffff",
-            "font_size":  14,
+            "font_size": 14,
         }
 
     @property
-    def default_size(self): return {"width": 150, "height": 40}
+    def default_size(self):
+        return {"width": 150, "height": 40}
 
     @property
     def available_events(self):
-        return ["onClick", "onDoubleClick", "onMouseEnter", "onMouseLeave",
-                "onFocus", "onBlur"]
+        return [
+            "onClick",
+            "onDoubleClick",
+            "onMouseEnter",
+            "onMouseLeave",
+            "onFocus",
+            "onBlur",
+        ]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        v       = props.get("variant",  "primary")
-        sz      = {"sm": "btn-sm", "lg": "btn-lg", "md": ""}.get(props.get("size", "md"), "")
-        dis     = "disabled" if props.get("disabled") else ""
-        fw      = "w-100"    if props.get("full_width") else ""
-        icon_cls = f'<i class="bi {props["icon"]} me-1"></i>' if props.get("icon") else ""
-        style   = (
+        v = props.get("variant", "primary")
+        sz = {"sm": "btn-sm", "lg": "btn-lg", "md": ""}.get(props.get("size", "md"), "")
+        dis = "disabled" if props.get("disabled") else ""
+        fw = "w-100" if props.get("full_width") else ""
+        icon_cls = (
+            f'<i class="bi {props["icon"]} me-1"></i>' if props.get("icon") else ""
+        )
+        style = (
             f"background-color:{props.get('bg_color','')};color:{props.get('text_color','#fff')};"
             f"border-radius:{props.get('border_radius',4)}px;"
             f"font-size:{props.get('font_size',14)}px;"
@@ -74,29 +84,30 @@ class ButtonComponent(BaseComponent):
 
 
 class TextBoxComponent(BaseComponent):
-    type  = "textbox"
+    type = "textbox"
     label = "Campo Texto"
-    icon  = "bi-input-cursor-text"
+    icon = "bi-input-cursor-text"
     group = "Entrada"
 
     @property
     def default_properties(self):
         return {
             "placeholder": "Digite aqui...",
-            "value":       "",
-            "maxlength":   "",
-            "readonly":    False,
-            "disabled":    False,
-            "input_type":  "text",          # text|email|password|tel|url
-            "label":       "",              # label acima do campo
+            "value": "",
+            "maxlength": "",
+            "readonly": False,
+            "disabled": False,
+            "input_type": "text",  # text|email|password|tel|url
+            "label": "",  # label acima do campo
             "helper_text": "",
-            "border_color":"#ced4da",
+            "border_color": "#ced4da",
             "border_radius": 4,
-            "font_size":   14,
+            "font_size": 14,
         }
 
     @property
-    def default_size(self): return {"width": 220, "height": 38}
+    def default_size(self):
+        return {"width": 220, "height": 38}
 
     @property
     def available_events(self):
@@ -104,20 +115,33 @@ class TextBoxComponent(BaseComponent):
 
     @property
     def available_rules(self):
-        return ["obrigatorio", "min_length", "max_length", "email",
-                "cpf", "cnpj", "visivel_se", "habilitado_se"]
+        return [
+            "obrigatorio",
+            "min_length",
+            "max_length",
+            "email",
+            "cpf",
+            "cnpj",
+            "visivel_se",
+            "habilitado_se",
+        ]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        lbl = f'<label class="form-label mb-1" style="font-size:12px;">{props["label"]}</label>' \
-              if props.get("label") else ""
+        lbl = (
+            f'<label class="form-label mb-1" style="font-size:12px;">{props["label"]}</label>'
+            if props.get("label")
+            else ""
+        )
         pos = self.position_style(x, y, width, height, z_index)
         itype = props.get("input_type", "text")
-        style = (f"border-color:{props.get('border_color','#ced4da')};"
-                 f"border-radius:{props.get('border_radius',4)}px;"
-                 f"font-size:{props.get('font_size',14)}px;")
-        ro    = "readonly" if props.get("readonly") else ""
-        dis   = "disabled" if props.get("disabled") else ""
-        mxl   = f'maxlength="{props["maxlength"]}"' if props.get("maxlength") else ""
+        style = (
+            f"border-color:{props.get('border_color','#ced4da')};"
+            f"border-radius:{props.get('border_radius',4)}px;"
+            f"font-size:{props.get('font_size',14)}px;"
+        )
+        ro = "readonly" if props.get("readonly") else ""
+        dis = "disabled" if props.get("disabled") else ""
+        mxl = f'maxlength="{props["maxlength"]}"' if props.get("maxlength") else ""
         return (
             f'<div style="{pos}">{lbl}'
             f'<input id="{comp_id}" type="{itype}" class="form-control" '
@@ -127,26 +151,27 @@ class TextBoxComponent(BaseComponent):
 
 
 class TextAreaComponent(BaseComponent):
-    type  = "textarea"
+    type = "textarea"
     label = "Área de Texto"
-    icon  = "bi-textarea"
+    icon = "bi-textarea"
     group = "Entrada"
 
     @property
     def default_properties(self):
         return {
             "placeholder": "Texto...",
-            "value":       "",
-            "rows":        4,
-            "maxlength":   "",
-            "readonly":    False,
-            "label":       "",
-            "resize":      "vertical",      # none|vertical|horizontal|both
-            "font_size":   14,
+            "value": "",
+            "rows": 4,
+            "maxlength": "",
+            "readonly": False,
+            "label": "",
+            "resize": "vertical",  # none|vertical|horizontal|both
+            "font_size": 14,
         }
 
     @property
-    def default_size(self): return {"width": 260, "height": 100}
+    def default_size(self):
+        return {"width": 260, "height": 100}
 
     @property
     def available_events(self):
@@ -154,7 +179,13 @@ class TextAreaComponent(BaseComponent):
 
     @property
     def available_rules(self):
-        return ["obrigatorio", "min_length", "max_length", "visivel_se", "habilitado_se"]
+        return [
+            "obrigatorio",
+            "min_length",
+            "max_length",
+            "visivel_se",
+            "habilitado_se",
+        ]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
@@ -169,21 +200,30 @@ class TextAreaComponent(BaseComponent):
 
 
 class NumberBoxComponent(BaseComponent):
-    type  = "numberbox"
+    type = "numberbox"
     label = "Campo Número"
-    icon  = "bi-123"
+    icon = "bi-123"
     group = "Entrada"
 
     @property
     def default_properties(self):
-        return {"value": "", "min": "", "max": "", "step": 1,
-                "placeholder": "0", "label": "", "font_size": 14}
+        return {
+            "value": "",
+            "min": "",
+            "max": "",
+            "step": 1,
+            "placeholder": "0",
+            "label": "",
+            "font_size": 14,
+        }
 
     @property
-    def default_size(self): return {"width": 160, "height": 38}
+    def default_size(self):
+        return {"width": 160, "height": 38}
 
     @property
-    def available_events(self): return ["onChange", "onFocus", "onBlur"]
+    def available_events(self):
+        return ["onChange", "onFocus", "onBlur"]
 
     @property
     def available_rules(self):
@@ -191,8 +231,8 @@ class NumberBoxComponent(BaseComponent):
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
-        mn  = f'min="{props["min"]}"'  if props.get("min",  "") != "" else ""
-        mx  = f'max="{props["max"]}"'  if props.get("max",  "") != "" else ""
+        mn = f'min="{props["min"]}"' if props.get("min", "") != "" else ""
+        mx = f'max="{props["max"]}"' if props.get("max", "") != "" else ""
         return (
             f'<div style="{pos}">'
             f'<input id="{comp_id}" type="number" class="form-control" '
@@ -203,9 +243,9 @@ class NumberBoxComponent(BaseComponent):
 
 
 class CheckBoxComponent(BaseComponent):
-    type  = "checkbox"
+    type = "checkbox"
     label = "CheckBox"
-    icon  = "bi-check-square"
+    icon = "bi-check-square"
     group = "Entrada"
 
     @property
@@ -213,14 +253,17 @@ class CheckBoxComponent(BaseComponent):
         return {"text": "Opção", "checked": False, "disabled": False, "font_size": 14}
 
     @property
-    def default_size(self): return {"width": 160, "height": 30}
+    def default_size(self):
+        return {"width": 160, "height": 30}
 
     @property
-    def available_events(self): return ["onChange", "onClick"]
+    def available_events(self):
+        return ["onChange", "onClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;")
+        pos = self.position_style(
+            x, y, width, height, z_index, "display:flex;align-items:center;"
+        )
         chk = "checked" if props.get("checked") else ""
         dis = "disabled" if props.get("disabled") else ""
         return (
@@ -234,25 +277,33 @@ class CheckBoxComponent(BaseComponent):
 
 
 class RadioButtonComponent(BaseComponent):
-    type  = "radiobutton"
+    type = "radiobutton"
     label = "RadioButton"
-    icon  = "bi-record-circle"
+    icon = "bi-record-circle"
     group = "Entrada"
 
     @property
     def default_properties(self):
-        return {"text": "Opção", "checked": False, "group_name": "grupo1",
-                "disabled": False, "font_size": 14}
+        return {
+            "text": "Opção",
+            "checked": False,
+            "group_name": "grupo1",
+            "disabled": False,
+            "font_size": 14,
+        }
 
     @property
-    def default_size(self): return {"width": 160, "height": 30}
+    def default_size(self):
+        return {"width": 160, "height": 30}
 
     @property
-    def available_events(self): return ["onChange", "onClick"]
+    def available_events(self):
+        return ["onChange", "onClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;")
+        pos = self.position_style(
+            x, y, width, height, z_index, "display:flex;align-items:center;"
+        )
         chk = "checked" if props.get("checked") else ""
         return (
             f'<div style="{pos}" class="form-check">'
@@ -265,34 +316,36 @@ class RadioButtonComponent(BaseComponent):
 
 
 class ComboBoxComponent(BaseComponent):
-    type  = "combobox"
+    type = "combobox"
     label = "ComboBox"
-    icon  = "bi-menu-button-wide"
+    icon = "bi-menu-button-wide"
     group = "Entrada"
 
     @property
     def default_properties(self):
         return {
-            "label":         "",
-            "placeholder":   "Selecione...",
-            "items":         ["Opção 1", "Opção 2", "Opção 3"],
+            "label": "",
+            "placeholder": "Selecione...",
+            "items": ["Opção 1", "Opção 2", "Opção 3"],
             "selected_value": "",
-            "disabled":      False,
-            "font_size":     14,
+            "disabled": False,
+            "font_size": 14,
         }
 
     @property
-    def default_size(self): return {"width": 220, "height": 38}
+    def default_size(self):
+        return {"width": 220, "height": 38}
 
     @property
-    def available_events(self): return ["onChange", "onFocus", "onBlur"]
+    def available_events(self):
+        return ["onChange", "onFocus", "onBlur"]
 
     @property
     def available_rules(self):
         return ["obrigatorio", "visivel_se", "habilitado_se"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos  = self.position_style(x, y, width, height, z_index)
+        pos = self.position_style(x, y, width, height, z_index)
         opts = "".join(
             f'<option value="{o}" {"selected" if o==props.get("selected_value") else ""}>{o}</option>'
             for o in (props.get("items") or [])
@@ -303,28 +356,37 @@ class ComboBoxComponent(BaseComponent):
             f'<select id="{comp_id}" class="form-select" {dis} data-dsb="{name}" '
             f'style="font-size:{props.get("font_size",14)}px;">'
             f'<option value="">{props.get("placeholder","Selecione...")}</option>'
-            f'{opts}</select></div>'
+            f"{opts}</select></div>"
         )
 
 
 class SwitchComponent(BaseComponent):
-    type  = "switch"
+    type = "switch"
     label = "Switch/Toggle"
-    icon  = "bi-toggle-on"
+    icon = "bi-toggle-on"
     group = "Entrada"
 
     @property
     def default_properties(self):
-        return {"text": "Ativado", "checked": False, "font_size": 14, "color": "#4154f1"}
+        return {
+            "text": "Ativado",
+            "checked": False,
+            "font_size": 14,
+            "color": "#4154f1",
+        }
 
     @property
-    def default_size(self): return {"width": 160, "height": 30}
+    def default_size(self):
+        return {"width": 160, "height": 30}
 
     @property
-    def available_events(self): return ["onChange", "onClick"]
+    def available_events(self):
+        return ["onChange", "onClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index, "display:flex;align-items:center;")
+        pos = self.position_style(
+            x, y, width, height, z_index, "display:flex;align-items:center;"
+        )
         chk = "checked" if props.get("checked") else ""
         return (
             f'<div style="{pos}" class="form-check form-switch">'
@@ -337,39 +399,51 @@ class SwitchComponent(BaseComponent):
 
 
 class SliderComponent(BaseComponent):
-    type  = "slider"
+    type = "slider"
     label = "Slider"
-    icon  = "bi-sliders"
+    icon = "bi-sliders"
     group = "Entrada"
 
     @property
     def default_properties(self):
-        return {"value": 50, "min": 0, "max": 100, "step": 1, "label": "", "show_value": True}
+        return {
+            "value": 50,
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "",
+            "show_value": True,
+        }
 
     @property
-    def default_size(self): return {"width": 240, "height": 40}
+    def default_size(self):
+        return {"width": 240, "height": 40}
 
     @property
-    def available_events(self): return ["onChange", "onInput"]
+    def available_events(self):
+        return ["onChange", "onInput"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
-        sv  = f'<output id="{comp_id}_out">{props.get("value",50)}</output>' \
-              if props.get("show_value") else ""
+        sv = (
+            f'<output id="{comp_id}_out">{props.get("value",50)}</output>'
+            if props.get("show_value")
+            else ""
+        )
         return (
             f'<div style="{pos}">'
             f'<input id="{comp_id}" type="range" class="form-range" '
             f'min="{props.get("min",0)}" max="{props.get("max",100)}" '
             f'step="{props.get("step",1)}" value="{props.get("value",50)}" '
-            f'oninput="document.getElementById(\'{comp_id}_out\').value=this.value" '
+            f"oninput=\"document.getElementById('{comp_id}_out').value=this.value\" "
             f'data-dsb="{name}"> {sv}</div>'
         )
 
 
 class DatePickerComponent(BaseComponent):
-    type  = "datepicker"
+    type = "datepicker"
     label = "Data"
-    icon  = "bi-calendar3"
+    icon = "bi-calendar3"
     group = "Entrada"
 
     @property
@@ -377,18 +451,21 @@ class DatePickerComponent(BaseComponent):
         return {"value": "", "min": "", "max": "", "label": "", "disabled": False}
 
     @property
-    def default_size(self): return {"width": 200, "height": 38}
+    def default_size(self):
+        return {"width": 200, "height": 38}
 
     @property
-    def available_events(self): return ["onChange"]
+    def available_events(self):
+        return ["onChange"]
 
     @property
-    def available_rules(self): return ["obrigatorio", "data_valida", "visivel_se", "habilitado_se"]
+    def available_rules(self):
+        return ["obrigatorio", "data_valida", "visivel_se", "habilitado_se"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
-        mn  = f'min="{props["min"]}"' if props.get("min") else ""
-        mx  = f'max="{props["max"]}"' if props.get("max") else ""
+        mn = f'min="{props["min"]}"' if props.get("min") else ""
+        mx = f'max="{props["max"]}"' if props.get("max") else ""
         return (
             f'<div style="{pos}">'
             f'<input id="{comp_id}" type="date" class="form-control" '
@@ -397,9 +474,9 @@ class DatePickerComponent(BaseComponent):
 
 
 class RatingComponent(BaseComponent):
-    type  = "rating"
+    type = "rating"
     label = "Rating"
-    icon  = "bi-star-half"
+    icon = "bi-star-half"
     group = "Entrada"
 
     @property
@@ -407,17 +484,19 @@ class RatingComponent(BaseComponent):
         return {"value": 3, "max": 5, "color": "#ffc107", "size": 24}
 
     @property
-    def default_size(self): return {"width": 150, "height": 36}
+    def default_size(self):
+        return {"width": 150, "height": 36}
 
     @property
-    def available_events(self): return ["onChange"]
+    def available_events(self):
+        return ["onChange"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index, "display:flex;gap:4px;")
-        val   = int(props.get("value", 3))
-        mx    = int(props.get("max", 5))
+        pos = self.position_style(x, y, width, height, z_index, "display:flex;gap:4px;")
+        val = int(props.get("value", 3))
+        mx = int(props.get("max", 5))
         color = props.get("color", "#ffc107")
-        sz    = props.get("size", 24)
+        sz = props.get("size", 24)
         stars = "".join(
             f'<i class="bi bi-star{"" if i > val else "-fill"}" '
             f'style="font-size:{sz}px;color:{color};cursor:pointer;" '
@@ -428,24 +507,30 @@ class RatingComponent(BaseComponent):
 
 
 class FileUploadComponent(BaseComponent):
-    type  = "fileupload"
+    type = "fileupload"
     label = "Upload Arquivo"
-    icon  = "bi-upload"
+    icon = "bi-upload"
     group = "Entrada"
 
     @property
     def default_properties(self):
-        return {"accept": "*/*", "multiple": False, "label": "Escolher arquivo",
-                "max_size_mb": 10}
+        return {
+            "accept": "*/*",
+            "multiple": False,
+            "label": "Escolher arquivo",
+            "max_size_mb": 10,
+        }
 
     @property
-    def default_size(self): return {"width": 220, "height": 38}
+    def default_size(self):
+        return {"width": 220, "height": 38}
 
     @property
-    def available_events(self): return ["onChange"]
+    def available_events(self):
+        return ["onChange"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos  = self.position_style(x, y, width, height, z_index)
+        pos = self.position_style(x, y, width, height, z_index)
         mult = "multiple" if props.get("multiple") else ""
         return (
             f'<div style="{pos}">'
@@ -458,31 +543,34 @@ class FileUploadComponent(BaseComponent):
 #  VISUALIZAÇÃO
 # ═══════════════════════════════════════════════════════════════
 
+
 class LabelComponent(BaseComponent):
-    type  = "label"
+    type = "label"
     label = "Texto / Label"
-    icon  = "bi-paragraph"
+    icon = "bi-paragraph"
     group = "Visualização"
 
     @property
     def default_properties(self):
         return {
-            "text":        "Texto parágrafo",
-            "tag":         "p",              # p|span|div|small|strong
-            "font_size":   14,
-            "text_color":  "#333333",
-            "bg_color":    "",
-            "bold":        False,
-            "italic":      False,
-            "text_align":  "left",
+            "text": "Texto parágrafo",
+            "tag": "p",  # p|span|div|small|strong
+            "font_size": 14,
+            "text_color": "#333333",
+            "bg_color": "",
+            "bold": False,
+            "italic": False,
+            "text_align": "left",
             "line_height": 1.5,
         }
 
     @property
-    def default_size(self): return {"width": 220, "height": 36}
+    def default_size(self):
+        return {"width": 220, "height": 36}
 
     @property
-    def available_events(self): return ["onClick"]
+    def available_events(self):
+        return ["onClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
@@ -506,24 +594,25 @@ class LabelComponent(BaseComponent):
 
 
 class HeadingComponent(BaseComponent):
-    type  = "heading"
+    type = "heading"
     label = "Título"
-    icon  = "bi-type-h1"
+    icon = "bi-type-h1"
     group = "Visualização"
 
     @property
     def default_properties(self):
         return {
-            "text":       "Título da Seção",
-            "tag":        "h2",              # h1..h6
-            "font_size":  26,
+            "text": "Título da Seção",
+            "tag": "h2",  # h1..h6
+            "font_size": 26,
             "text_color": "#012970",
-            "bold":       True,
+            "bold": True,
             "text_align": "left",
         }
 
     @property
-    def default_size(self): return {"width": 320, "height": 48}
+    def default_size(self):
+        return {"width": 320, "height": 48}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
@@ -542,25 +631,27 @@ class HeadingComponent(BaseComponent):
 
 
 class ImageComponent(BaseComponent):
-    type  = "image"
+    type = "image"
     label = "Imagem"
-    icon  = "bi-image"
+    icon = "bi-image"
     group = "Visualização"
 
     @property
     def default_properties(self):
         return {
-            "src":         "https://placehold.co/300x200/e8edff/4154f1?text=Imagem",
-            "alt":         "Imagem",
-            "object_fit":  "cover",   # cover|contain|fill|none
+            "src": "https://placehold.co/300x200/e8edff/4154f1?text=Imagem",
+            "alt": "Imagem",
+            "object_fit": "cover",  # cover|contain|fill|none
             "border_radius": 4,
         }
 
     @property
-    def default_size(self): return {"width": 300, "height": 200}
+    def default_size(self):
+        return {"width": 300, "height": 200}
 
     @property
-    def available_events(self): return ["onClick"]
+    def available_events(self):
+        return ["onClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index, "overflow:hidden;")
@@ -576,9 +667,9 @@ class ImageComponent(BaseComponent):
 
 
 class IconComponent(BaseComponent):
-    type  = "icon"
+    type = "icon"
     label = "Ícone"
-    icon  = "bi-star"
+    icon = "bi-star"
     group = "Visualização"
 
     @property
@@ -586,14 +677,22 @@ class IconComponent(BaseComponent):
         return {"icon_class": "bi-star-fill", "size": 32, "color": "#4154f1"}
 
     @property
-    def default_size(self): return {"width": 50, "height": 50}
+    def default_size(self):
+        return {"width": 50, "height": 50}
 
     @property
-    def available_events(self): return ["onClick"]
+    def available_events(self):
+        return ["onClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;justify-content:center;")
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            "display:flex;align-items:center;justify-content:center;",
+        )
         return (
             f'<div id="{comp_id}" style="{pos}" data-dsb="{name}">'
             f'<i class="bi {props.get("icon_class","bi-star-fill")}" '
@@ -602,9 +701,9 @@ class IconComponent(BaseComponent):
 
 
 class BadgeComponent(BaseComponent):
-    type  = "badge"
+    type = "badge"
     label = "Badge"
-    icon  = "bi-tag"
+    icon = "bi-tag"
     group = "Visualização"
 
     @property
@@ -612,11 +711,12 @@ class BadgeComponent(BaseComponent):
         return {"text": "Novo", "variant": "primary", "pill": False, "font_size": 12}
 
     @property
-    def default_size(self): return {"width": 70, "height": 28}
+    def default_size(self):
+        return {"width": 70, "height": 28}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
-        pill  = "rounded-pill" if props.get("pill") else ""
+        pos = self.position_style(x, y, width, height, z_index)
+        pill = "rounded-pill" if props.get("pill") else ""
         return (
             f'<div style="{pos}">'
             f'<span id="{comp_id}" class="badge bg-{props.get("variant","primary")} {pill}" '
@@ -626,62 +726,89 @@ class BadgeComponent(BaseComponent):
 
 
 class ProgressBarComponent(BaseComponent):
-    type  = "progressbar"
+    type = "progressbar"
     label = "Progress Bar"
-    icon  = "bi-bar-chart-steps"
+    icon = "bi-bar-chart-steps"
     group = "Visualização"
 
     @property
     def default_properties(self):
-        return {"value": 60, "min": 0, "max": 100,
-                "variant": "primary", "striped": False, "animated": False,
-                "show_text": True, "height": 20}
+        return {
+            "value": 60,
+            "min": 0,
+            "max": 100,
+            "variant": "primary",
+            "striped": False,
+            "animated": False,
+            "show_text": True,
+            "height": 20,
+        }
 
     @property
-    def default_size(self): return {"width": 280, "height": 28}
+    def default_size(self):
+        return {"width": 280, "height": 28}
 
     @property
-    def available_events(self): return ["onComplete", "onProgress"]
+    def available_events(self):
+        return ["onComplete", "onProgress"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos  = self.position_style(x, y, width, height, z_index)
-        val  = int(props.get("value", 60))
-        mx   = int(props.get("max", 100))
-        pct  = round(val / mx * 100) if mx else 0
-        ext  = ("progress-bar-striped " + ("progress-bar-animated" if props.get("animated") else "")) \
-               if props.get("striped") else ""
-        txt  = f"{pct}%" if props.get("show_text") else ""
-        h    = props.get("height", 20)
+        pos = self.position_style(x, y, width, height, z_index)
+        val = int(props.get("value", 60))
+        mx = int(props.get("max", 100))
+        pct = round(val / mx * 100) if mx else 0
+        ext = (
+            (
+                "progress-bar-striped "
+                + ("progress-bar-animated" if props.get("animated") else "")
+            )
+            if props.get("striped")
+            else ""
+        )
+        txt = f"{pct}%" if props.get("show_text") else ""
+        h = props.get("height", 20)
         return (
             f'<div style="{pos}">'
             f'<div id="{comp_id}" class="progress" style="height:{h}px;" data-dsb="{name}">'
             f'<div class="progress-bar bg-{props.get("variant","primary")} {ext}" '
             f'role="progressbar" style="width:{pct}%" '
             f'aria-valuenow="{val}" aria-valuemin="{props.get("min",0)}" aria-valuemax="{mx}">'
-            f'{txt}</div></div></div>'
+            f"{txt}</div></div></div>"
         )
 
 
 class StatusBarComponent(BaseComponent):
-    type  = "statusbar"
+    type = "statusbar"
     label = "Status Bar"
-    icon  = "bi-info-circle"
+    icon = "bi-info-circle"
     group = "Visualização"
 
     @property
     def default_properties(self):
-        return {"text": "Pronto", "icon": "bi-check-circle",
-                "bg_color": "#d1e7dd", "text_color": "#0a3622", "font_size": 13}
+        return {
+            "text": "Pronto",
+            "icon": "bi-check-circle",
+            "bg_color": "#d1e7dd",
+            "text_color": "#0a3622",
+            "font_size": 13,
+        }
 
     @property
-    def default_size(self): return {"width": 300, "height": 32}
+    def default_size(self):
+        return {"width": 300, "height": 32}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;gap:6px;"
-                                  f"padding:4px 12px;border-radius:4px;"
-                                  f"background:{props.get('bg_color','#d1e7dd')};"
-                                  f"color:{props.get('text_color','#0a3622')};")
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            "display:flex;align-items:center;gap:6px;"
+            f"padding:4px 12px;border-radius:4px;"
+            f"background:{props.get('bg_color','#d1e7dd')};"
+            f"color:{props.get('text_color','#0a3622')};",
+        )
         return (
             f'<div id="{comp_id}" style="{pos}" data-dsb="{name}">'
             f'<i class="bi {props.get("icon","bi-check-circle")}"></i>'
@@ -691,21 +818,27 @@ class StatusBarComponent(BaseComponent):
 
 
 class SeparatorComponent(BaseComponent):
-    type  = "separator"
+    type = "separator"
     label = "Divisor"
-    icon  = "bi-hr"
+    icon = "bi-hr"
     group = "Visualização"
 
     @property
     def default_properties(self):
-        return {"color": "#dee2e6", "thickness": 2, "style": "solid"}  # solid|dashed|dotted
+        return {
+            "color": "#dee2e6",
+            "thickness": 2,
+            "style": "solid",
+        }  # solid|dashed|dotted
 
     @property
-    def default_size(self): return {"width": 300, "height": 8}
+    def default_size(self):
+        return {"width": 300, "height": 8}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;")
+        pos = self.position_style(
+            x, y, width, height, z_index, "display:flex;align-items:center;"
+        )
         style = (
             f"width:100%;border:none;border-top:{props.get('thickness',2)}px "
             f"{props.get('style','solid')} {props.get('color','#dee2e6')};margin:0;"
@@ -714,9 +847,9 @@ class SeparatorComponent(BaseComponent):
 
 
 class SpinnerComponent(BaseComponent):
-    type  = "spinner"
+    type = "spinner"
     label = "Spinner"
-    icon  = "bi-arrow-repeat"
+    icon = "bi-arrow-repeat"
     group = "Visualização"
 
     @property
@@ -724,13 +857,20 @@ class SpinnerComponent(BaseComponent):
         return {"variant": "primary", "size": "md", "type": "border"}  # border|grow
 
     @property
-    def default_size(self): return {"width": 50, "height": 50}
+    def default_size(self):
+        return {"width": 50, "height": 50}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos  = self.position_style(x, y, width, height, z_index,
-                                   "display:flex;align-items:center;justify-content:center;")
-        sz   = "spinner-border-sm" if props.get("size") == "sm" else ""
-        t    = props.get("type", "border")
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            "display:flex;align-items:center;justify-content:center;",
+        )
+        sz = "spinner-border-sm" if props.get("size") == "sm" else ""
+        t = props.get("type", "border")
         return (
             f'<div style="{pos}">'
             f'<div id="{comp_id}" class="spinner-{t} text-{props.get("variant","primary")} {sz}" '
@@ -742,80 +882,120 @@ class SpinnerComponent(BaseComponent):
 #  CONTAINER / LAYOUT
 # ═══════════════════════════════════════════════════════════════
 
+
 class PanelComponent(BaseComponent):
-    type  = "panel"
+    type = "panel"
     label = "Painel"
-    icon  = "bi-bounding-box"
+    icon = "bi-bounding-box"
     group = "Container"
 
     @property
     def default_properties(self):
-        return {"bg_color": "#f8f9fa", "border": "#dee2e6",
-                "padding": "16px", "border_radius": 4, "shadow": False}
+        return {
+            "bg_color": "#f8f9fa",
+            "border": "#dee2e6",
+            "padding": "16px",
+            "border_radius": 4,
+            "shadow": False,
+        }
 
     @property
-    def default_size(self): return {"width": 320, "height": 180}
+    def default_size(self):
+        return {"width": 320, "height": 180}
 
     @property
-    def available_events(self): return ["onClick", "onMouseEnter"]
+    def available_events(self):
+        return ["onClick", "onMouseEnter"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  f"background:{props.get('bg_color','#f8f9fa')};"
-                                  f"border:1px solid {props.get('border','#dee2e6')};"
-                                  f"padding:{props.get('padding','16px')};"
-                                  f"border-radius:{props.get('border_radius',4)}px;"
-                                  + ("box-shadow:0 2px 10px rgba(0,0,0,.1);" if props.get("shadow") else ""))
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            f"background:{props.get('bg_color','#f8f9fa')};"
+            f"border:1px solid {props.get('border','#dee2e6')};"
+            f"padding:{props.get('padding','16px')};"
+            f"border-radius:{props.get('border_radius',4)}px;"
+            + ("box-shadow:0 2px 10px rgba(0,0,0,.1);" if props.get("shadow") else ""),
+        )
         return f'<div id="{comp_id}" style="{pos}" data-dsb="{name}"></div>'
 
 
 class CardComponent(BaseComponent):
-    type  = "card"
+    type = "card"
     label = "Card"
-    icon  = "bi-card-text"
+    icon = "bi-card-text"
     group = "Container"
 
     @property
     def default_properties(self):
-        return {"title": "Título do Card", "subtitle": "", "body": "Conteúdo...",
-                "footer": "", "shadow": True, "border_radius": 8,
-                "header_bg": "#4154f1", "header_color": "#fff"}
+        return {
+            "title": "Título do Card",
+            "subtitle": "",
+            "body": "Conteúdo...",
+            "footer": "",
+            "shadow": True,
+            "border_radius": 8,
+            "header_bg": "#4154f1",
+            "header_color": "#fff",
+        }
 
     @property
-    def default_size(self): return {"width": 300, "height": 200}
+    def default_size(self):
+        return {"width": 300, "height": 200}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         shadow = "shadow-sm" if props.get("shadow") else ""
-        pos    = self.position_style(x, y, width, height, z_index,
-                                     f"border-radius:{props.get('border_radius',8)}px;overflow:hidden;")
-        hbg    = props.get("header_bg",   "#4154f1")
-        hcol   = props.get("header_color","#fff")
-        sub    = f'<h6 class="card-subtitle text-muted">{props["subtitle"]}</h6>' \
-                 if props.get("subtitle") else ""
-        foot   = f'<div class="card-footer">{props["footer"]}</div>' \
-                 if props.get("footer") else ""
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            f"border-radius:{props.get('border_radius',8)}px;overflow:hidden;",
+        )
+        hbg = props.get("header_bg", "#4154f1")
+        hcol = props.get("header_color", "#fff")
+        sub = (
+            f'<h6 class="card-subtitle text-muted">{props["subtitle"]}</h6>'
+            if props.get("subtitle")
+            else ""
+        )
+        foot = (
+            f'<div class="card-footer">{props["footer"]}</div>'
+            if props.get("footer")
+            else ""
+        )
         return (
             f'<div id="{comp_id}" class="card {shadow}" style="{pos}" data-dsb="{name}">'
             f'<div class="card-header" style="background:{hbg};color:{hcol};">'
             f'<strong>{props.get("title","Card")}</strong></div>'
             f'<div class="card-body"><p class="card-text">{props.get("body","")}</p>{sub}</div>'
-            f'{foot}</div>'
+            f"{foot}</div>"
         )
 
 
 class GroupBoxComponent(BaseComponent):
-    type  = "groupbox"
+    type = "groupbox"
     label = "GroupBox"
-    icon  = "bi-collection"
+    icon = "bi-collection"
     group = "Container"
 
     @property
     def default_properties(self):
-        return {"title": "Grupo", "bg_color": "#fff", "border": "#ced4da",
-                "collapsible": False, "font_size": 13}
+        return {
+            "title": "Grupo",
+            "bg_color": "#fff",
+            "border": "#ced4da",
+            "collapsible": False,
+            "font_size": 13,
+        }
 
     @property
-    def default_size(self): return {"width": 300, "height": 160}
+    def default_size(self):
+        return {"width": 300, "height": 160}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
@@ -828,27 +1008,32 @@ class GroupBoxComponent(BaseComponent):
 
 
 class TabsComponent(BaseComponent):
-    type  = "tabs"
+    type = "tabs"
     label = "Abas (Tabs)"
-    icon  = "bi-folder-symlink"
+    icon = "bi-folder-symlink"
     group = "Container"
 
     @property
     def default_properties(self):
-        return {"tabs": ["Aba 1", "Aba 2", "Aba 3"],
-                "active_tab": 0, "variant": "tabs"}   # tabs|pills
+        return {
+            "tabs": ["Aba 1", "Aba 2", "Aba 3"],
+            "active_tab": 0,
+            "variant": "tabs",
+        }  # tabs|pills
 
     @property
-    def default_size(self): return {"width": 400, "height": 200}
+    def default_size(self):
+        return {"width": 400, "height": 200}
 
     @property
-    def available_events(self): return ["onTabChange"]
+    def available_events(self):
+        return ["onTabChange"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
-        tabs  = props.get("tabs", ["Aba 1", "Aba 2"])
-        v     = props.get("variant", "tabs")
-        nav   = "".join(
+        pos = self.position_style(x, y, width, height, z_index)
+        tabs = props.get("tabs", ["Aba 1", "Aba 2"])
+        v = props.get("variant", "tabs")
+        nav = "".join(
             f'<li class="nav-item"><a class="nav-link {"active" if i==0 else ""}" '
             f'href="#">{t}</a></li>'
             for i, t in enumerate(tabs)
@@ -857,14 +1042,14 @@ class TabsComponent(BaseComponent):
             f'<div id="{comp_id}" style="{pos}" data-dsb="{name}">'
             f'<ul class="nav nav-{v}">{nav}</ul>'
             f'<div class="tab-content border border-top-0 p-3" style="height:calc(100% - 42px);">'
-            f'</div></div>'
+            f"</div></div>"
         )
 
 
 class AccordionComponent(BaseComponent):
-    type  = "accordion"
+    type = "accordion"
     label = "Accordion"
-    icon  = "bi-layout-accordion-collapsed"
+    icon = "bi-layout-accordion-collapsed"
     group = "Container"
 
     @property
@@ -872,23 +1057,24 @@ class AccordionComponent(BaseComponent):
         return {"sections": ["Seção 1", "Seção 2", "Seção 3"], "flush": False}
 
     @property
-    def default_size(self): return {"width": 360, "height": 150}
+    def default_size(self):
+        return {"width": 360, "height": 150}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
-        fl    = "accordion-flush" if props.get("flush") else ""
+        pos = self.position_style(x, y, width, height, z_index)
+        fl = "accordion-flush" if props.get("flush") else ""
         items = "".join(
             f'<div class="accordion-item">'
             f'<h2 class="accordion-header">'
             f'<button class="accordion-button {"collapsed" if i>0 else ""}" type="button">'
-            f'{s}</button></h2>'
+            f"{s}</button></h2>"
             f'<div class="accordion-collapse collapse {"show" if i==0 else ""}">'
             f'<div class="accordion-body"></div></div></div>'
             for i, s in enumerate(props.get("sections", ["Seção 1"]))
         )
         return (
             f'<div id="{comp_id}" class="accordion {fl}" style="{pos}" data-dsb="{name}">'
-            f'{items}</div>'
+            f"{items}</div>"
         )
 
 
@@ -896,39 +1082,46 @@ class AccordionComponent(BaseComponent):
 #  DADOS
 # ═══════════════════════════════════════════════════════════════
 
+
 class DataGridComponent(BaseComponent):
-    type  = "datagrid"
+    type = "datagrid"
     label = "DataGrid / Tabela"
-    icon  = "bi-table"
+    icon = "bi-table"
     group = "Dados"
 
     @property
     def default_properties(self):
         return {
-            "columns":    ["ID", "Nome", "Valor"],
-            "rows":       [["1","Item A","R$ 10,00"], ["2","Item B","R$ 20,00"]],
-            "striped":    True,
-            "hover":      True,
-            "bordered":   False,
-            "small":      False,
+            "columns": ["ID", "Nome", "Valor"],
+            "rows": [["1", "Item A", "R$ 10,00"], ["2", "Item B", "R$ 20,00"]],
+            "striped": True,
+            "hover": True,
+            "bordered": False,
+            "small": False,
             "pagination": False,
-            "sortable":   True,
+            "sortable": True,
             "searchable": False,
         }
 
     @property
-    def default_size(self): return {"width": 480, "height": 200}
+    def default_size(self):
+        return {"width": 480, "height": 200}
 
     @property
-    def available_events(self): return ["onRowClick", "onCellEdit", "onSort"]
+    def available_events(self):
+        return ["onRowClick", "onCellEdit", "onSort"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos  = self.position_style(x, y, width, height, z_index, "overflow:auto;")
-        cls  = ("table-striped "  if props.get("striped")  else "") + \
-               ("table-hover "    if props.get("hover")    else "") + \
-               ("table-bordered " if props.get("bordered") else "") + \
-               ("table-sm "       if props.get("small")    else "")
-        hdrs = "".join(f'<th scope="col">{c}</th>' for c in (props.get("columns") or []))
+        pos = self.position_style(x, y, width, height, z_index, "overflow:auto;")
+        cls = (
+            ("table-striped " if props.get("striped") else "")
+            + ("table-hover " if props.get("hover") else "")
+            + ("table-bordered " if props.get("bordered") else "")
+            + ("table-sm " if props.get("small") else "")
+        )
+        hdrs = "".join(
+            f'<th scope="col">{c}</th>' for c in (props.get("columns") or [])
+        )
         rows = "".join(
             "<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>"
             for row in (props.get("rows") or [])
@@ -936,40 +1129,42 @@ class DataGridComponent(BaseComponent):
         return (
             f'<div id="{comp_id}" style="{pos}" data-dsb="{name}">'
             f'<table class="table {cls}"><thead class="table-dark"><tr>{hdrs}</tr></thead>'
-            f'<tbody>{rows}</tbody></table></div>'
+            f"<tbody>{rows}</tbody></table></div>"
         )
 
 
 class ChartComponent(BaseComponent):
-    type  = "chart"
+    type = "chart"
     label = "Gráfico"
-    icon  = "bi-bar-chart"
+    icon = "bi-bar-chart"
     group = "Dados"
 
     @property
     def default_properties(self):
         return {
-            "chart_type": "bar",   # bar|line|pie|doughnut
-            "labels":  ["Jan","Fev","Mar","Abr","Mai","Jun"],
-            "data":    [12, 19, 3, 5, 2, 3],
-            "label":   "Dados",
-            "color":   "#4154f1",
+            "chart_type": "bar",  # bar|line|pie|doughnut
+            "labels": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
+            "data": [12, 19, 3, 5, 2, 3],
+            "label": "Dados",
+            "color": "#4154f1",
         }
 
     @property
-    def default_size(self): return {"width": 400, "height": 260}
+    def default_size(self):
+        return {"width": 400, "height": 260}
 
     @property
-    def available_events(self): return ["onDataPointClick"]
+    def available_events(self):
+        return ["onDataPointClick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
         # Gera script Chart.js inline
-        t     = props.get("chart_type","bar")
-        lbls  = str(props.get("labels", []))
-        data  = str(props.get("data", []))
+        t = props.get("chart_type", "bar")
+        lbls = str(props.get("labels", []))
+        data = str(props.get("data", []))
         color = props.get("color", "#4154f1")
-        lbl   = props.get("label", "Dados")
+        lbl = props.get("label", "Dados")
         return (
             f'<div style="{pos}">'
             f'<canvas id="{comp_id}" data-dsb="{name}"></canvas>'
@@ -977,7 +1172,7 @@ class ChartComponent(BaseComponent):
             f'type:"{t}",data:{{labels:{lbls},'
             f'datasets:[{{label:"{lbl}",data:{data},'
             f'backgroundColor:"{color}"}}]}},'
-            f'options:{{responsive:true,maintainAspectRatio:false}}}});</script></div>'
+            f"options:{{responsive:true,maintainAspectRatio:false}}}});</script></div>"
         )
 
     def render_js(self, comp_id, events, rules):
@@ -986,9 +1181,9 @@ class ChartComponent(BaseComponent):
 
 
 class PaginationComponent(BaseComponent):
-    type  = "pagination"
+    type = "pagination"
     label = "Paginação"
-    icon  = "bi-arrow-left-right"
+    icon = "bi-arrow-left-right"
     group = "Dados"
 
     @property
@@ -996,23 +1191,27 @@ class PaginationComponent(BaseComponent):
         return {"total": 50, "per_page": 10, "current": 1, "size": "md"}  # sm|md|lg
 
     @property
-    def default_size(self): return {"width": 280, "height": 40}
+    def default_size(self):
+        return {"width": 280, "height": 40}
 
     @property
-    def available_events(self): return ["onPageChange"]
+    def available_events(self):
+        return ["onPageChange"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
+        pos = self.position_style(x, y, width, height, z_index)
         total = int(props.get("total", 50))
-        pp    = int(props.get("per_page", 10))
-        cur   = int(props.get("current", 1))
+        pp = int(props.get("per_page", 10))
+        cur = int(props.get("current", 1))
         pages = max(1, -(-total // pp))  # ceil division
-        sz    = {"sm":"pagination-sm","lg":"pagination-lg","md":""}.get(props.get("size","md"),"")
+        sz = {"sm": "pagination-sm", "lg": "pagination-lg", "md": ""}.get(
+            props.get("size", "md"), ""
+        )
         items = (
             f'<li class="page-item{"disabled" if cur<=1 else ""}"><a class="page-link" href="#">«</a></li>'
             + "".join(
                 f'<li class="page-item{"active" if i==cur else ""}"><a class="page-link" href="#">{i}</a></li>'
-                for i in range(max(1,cur-2), min(pages+1,cur+3))
+                for i in range(max(1, cur - 2), min(pages + 1, cur + 3))
             )
             + f'<li class="page-item{"disabled" if cur>=pages else ""}"><a class="page-link" href="#">»</a></li>'
         )
@@ -1026,27 +1225,40 @@ class PaginationComponent(BaseComponent):
 #  FEEDBACK
 # ═══════════════════════════════════════════════════════════════
 
+
 class AlertComponent(BaseComponent):
-    type  = "alert"
+    type = "alert"
     label = "Alert"
-    icon  = "bi-info-circle"
+    icon = "bi-info-circle"
     group = "Feedback"
 
     @property
     def default_properties(self):
-        return {"text": "Mensagem de alerta.", "variant": "info",
-                "dismissible": False, "icon": "bi-info-circle-fill", "font_size": 14}
+        return {
+            "text": "Mensagem de alerta.",
+            "variant": "info",
+            "dismissible": False,
+            "icon": "bi-info-circle-fill",
+            "font_size": 14,
+        }
 
     @property
-    def default_size(self): return {"width": 340, "height": 56}
+    def default_size(self):
+        return {"width": 340, "height": 56}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
         pos = self.position_style(x, y, width, height, z_index)
-        dis = 'alert-dismissible fade show' if props.get("dismissible") else ""
-        btn = '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' \
-              if props.get("dismissible") else ""
-        ic  = f'<i class="bi {props.get("icon","bi-info-circle-fill")} me-2"></i>' \
-              if props.get("icon") else ""
+        dis = "alert-dismissible fade show" if props.get("dismissible") else ""
+        btn = (
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>'
+            if props.get("dismissible")
+            else ""
+        )
+        ic = (
+            f'<i class="bi {props.get("icon","bi-info-circle-fill")} me-2"></i>'
+            if props.get("icon")
+            else ""
+        )
         return (
             f'<div id="{comp_id}" class="alert alert-{props.get("variant","info")} {dis}" '
             f'style="{pos};font-size:{props.get("font_size",14)}px;" data-dsb="{name}">'
@@ -1055,28 +1267,37 @@ class AlertComponent(BaseComponent):
 
 
 class ModalComponent(BaseComponent):
-    type  = "modal"
+    type = "modal"
     label = "Dialog/Modal"
-    icon  = "bi-window-stack"
+    icon = "bi-window-stack"
     group = "Feedback"
 
     @property
     def default_properties(self):
-        return {"title": "Título do Dialog", "body": "Conteúdo do modal...",
-                "size": "md",           # sm|md|lg|xl
-                "close_on_backdrop": True,
-                "trigger_label": "Abrir Dialog"}
+        return {
+            "title": "Título do Dialog",
+            "body": "Conteúdo do modal...",
+            "size": "md",  # sm|md|lg|xl
+            "close_on_backdrop": True,
+            "trigger_label": "Abrir Dialog",
+        }
 
     @property
-    def default_size(self): return {"width": 200, "height": 40}
+    def default_size(self):
+        return {"width": 200, "height": 40}
 
     @property
-    def available_events(self): return ["onOpen", "onClose", "onConfirm", "onCancel"]
+    def available_events(self):
+        return ["onOpen", "onClose", "onConfirm", "onCancel"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
-        sz_c  = {"sm":"modal-sm","lg":"modal-lg","xl":"modal-xl","md":""}.get(props.get("size","md"),"")
-        backdrop = "" if props.get("close_on_backdrop", True) else 'data-bs-backdrop="static"'
+        pos = self.position_style(x, y, width, height, z_index)
+        sz_c = {"sm": "modal-sm", "lg": "modal-lg", "xl": "modal-xl", "md": ""}.get(
+            props.get("size", "md"), ""
+        )
+        backdrop = (
+            "" if props.get("close_on_backdrop", True) else 'data-bs-backdrop="static"'
+        )
         return (
             f'<div style="{pos}">'
             f'<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#{comp_id}_m">'
@@ -1090,7 +1311,7 @@ class ModalComponent(BaseComponent):
             f'<div class="modal-footer">'
             f'<button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>'
             f'<button class="btn btn-primary" data-bs-dismiss="modal" id="{comp_id}" data-dsb="{name}">OK</button>'
-            f'</div></div></div></div>'
+            f"</div></div></div></div>"
         )
 
 
@@ -1098,23 +1319,32 @@ class ModalComponent(BaseComponent):
 #  NAVEGAÇÃO
 # ═══════════════════════════════════════════════════════════════
 
+
 class NavbarComponent(BaseComponent):
-    type  = "navbar"
+    type = "navbar"
     label = "Navbar"
-    icon  = "bi-layout-text-sidebar-reverse"
+    icon = "bi-layout-text-sidebar-reverse"
     group = "Navegação"
 
     @property
     def default_properties(self):
-        return {"brand": "Meu Site", "links": ["Início","Sobre","Contato"],
-                "variant": "dark", "bg": "primary", "expand": "lg"}
+        return {
+            "brand": "Meu Site",
+            "links": ["Início", "Sobre", "Contato"],
+            "variant": "dark",
+            "bg": "primary",
+            "expand": "lg",
+        }
 
     @property
-    def default_size(self): return {"width": 600, "height": 56}
+    def default_size(self):
+        return {"width": 600, "height": 56}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
-        links = "".join(f'<a class="nav-link" href="#">{l}</a>' for l in (props.get("links") or []))
+        pos = self.position_style(x, y, width, height, z_index)
+        links = "".join(
+            f'<a class="nav-link" href="#">{l}</a>' for l in (props.get("links") or [])
+        )
         return (
             f'<nav id="{comp_id}" class="navbar navbar-expand-{props.get("expand","lg")} '
             f'navbar-{props.get("variant","dark")} bg-{props.get("bg","primary")}" '
@@ -1126,9 +1356,9 @@ class NavbarComponent(BaseComponent):
 
 
 class BreadcrumbComponent(BaseComponent):
-    type  = "breadcrumb"
+    type = "breadcrumb"
     label = "Breadcrumb"
-    icon  = "bi-chevron-right"
+    icon = "bi-chevron-right"
     group = "Navegação"
 
     @property
@@ -1136,10 +1366,11 @@ class BreadcrumbComponent(BaseComponent):
         return {"items": ["Início", "Produtos", "Detalhe"]}
 
     @property
-    def default_size(self): return {"width": 280, "height": 32}
+    def default_size(self):
+        return {"width": 280, "height": 32}
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index)
+        pos = self.position_style(x, y, width, height, z_index)
         items = props.get("items", ["Home"])
         crumbs = "".join(
             f'<li class="breadcrumb-item {"active" if i==len(items)-1 else ""}">'
@@ -1154,32 +1385,38 @@ class BreadcrumbComponent(BaseComponent):
 
 
 class StepperComponent(BaseComponent):
-    type  = "stepper"
+    type = "stepper"
     label = "Stepper"
-    icon  = "bi-list-ol"
+    icon = "bi-list-ol"
     group = "Navegação"
 
     @property
     def default_properties(self):
-        return {"steps": ["Dados","Endereço","Pagamento","Confirmação"],
-                "current": 1, "variant": "primary"}
+        return {
+            "steps": ["Dados", "Endereço", "Pagamento", "Confirmação"],
+            "current": 1,
+            "variant": "primary",
+        }
 
     @property
-    def default_size(self): return {"width": 480, "height": 60}
+    def default_size(self):
+        return {"width": 480, "height": 60}
 
     @property
-    def available_events(self): return ["onStepChange"]
+    def available_events(self):
+        return ["onStepChange"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos   = self.position_style(x, y, width, height, z_index,
-                                    "display:flex;align-items:center;gap:0;")
+        pos = self.position_style(
+            x, y, width, height, z_index, "display:flex;align-items:center;gap:0;"
+        )
         steps = props.get("steps", [])
-        cur   = int(props.get("current", 1))
-        v     = props.get("variant", "primary")
+        cur = int(props.get("current", 1))
+        v = props.get("variant", "primary")
         items = []
         for i, s in enumerate(steps, 1):
             active = i == cur
-            done   = i < cur
+            done = i < cur
             circle_bg = f"bg-{v}" if done or active else "bg-secondary"
             items.append(
                 f'<div style="display:flex;flex-direction:column;align-items:center;flex:1;">'
@@ -1187,8 +1424,11 @@ class StepperComponent(BaseComponent):
                 f'style="width:30px;height:30px;font-size:13px;font-weight:bold;">'
                 f'{"✓" if done else i}</div>'
                 f'<small style="margin-top:4px;font-size:11px;{"font-weight:600;" if active else ""}">{s}</small></div>'
-                + (f'<div style="flex:1;height:2px;background:{"var(--bs-"+v+")" if done else "#dee2e6"};margin-top:-20px;"></div>'
-                   if i < len(steps) else "")
+                + (
+                    f'<div style="flex:1;height:2px;background:{"var(--bs-"+v+")" if done else "#dee2e6"};margin-top:-20px;"></div>'
+                    if i < len(steps)
+                    else ""
+                )
             )
         return f'<div id="{comp_id}" style="{pos}" data-dsb="{name}">{"".join(items)}</div>'
 
@@ -1197,27 +1437,41 @@ class StepperComponent(BaseComponent):
 #  TEMPO / TAREFAS
 # ═══════════════════════════════════════════════════════════════
 
+
 class TimerComponent(BaseComponent):
-    type  = "timer"
+    type = "timer"
     label = "Timer"
-    icon  = "bi-alarm"
+    icon = "bi-alarm"
     group = "Tempo"
 
     @property
     def default_properties(self):
-        return {"interval_ms": 1000, "enabled": False, "repeat": True, "label": "Timer1"}
+        return {
+            "interval_ms": 1000,
+            "enabled": False,
+            "repeat": True,
+            "label": "Timer1",
+        }
 
     @property
-    def default_size(self): return {"width": 150, "height": 40}
+    def default_size(self):
+        return {"width": 150, "height": 40}
 
     @property
-    def available_events(self): return ["onTick"]
+    def available_events(self):
+        return ["onTick"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;gap:6px;"
-                                  "background:#fff3cd;border:1px solid #ffc107;"
-                                  "padding:4px 10px;border-radius:4px;")
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            "display:flex;align-items:center;gap:6px;"
+            "background:#fff3cd;border:1px solid #ffc107;"
+            "padding:4px 10px;border-radius:4px;",
+        )
         return (
             f'<div id="{comp_id}" style="{pos}" data-dsb="{name}" '
             f'data-interval="{props.get("interval_ms",1000)}" '
@@ -1229,26 +1483,39 @@ class TimerComponent(BaseComponent):
 
 
 class CountdownComponent(BaseComponent):
-    type  = "countdown"
+    type = "countdown"
     label = "Countdown"
-    icon  = "bi-stopwatch"
+    icon = "bi-stopwatch"
     group = "Tempo"
 
     @property
     def default_properties(self):
-        return {"seconds": 60, "format": "MM:SS", "auto_start": False,
-                "font_size": 32, "color": "#4154f1"}
+        return {
+            "seconds": 60,
+            "format": "MM:SS",
+            "auto_start": False,
+            "font_size": 32,
+            "color": "#4154f1",
+        }
 
     @property
-    def default_size(self): return {"width": 150, "height": 60}
+    def default_size(self):
+        return {"width": 150, "height": 60}
 
     @property
-    def available_events(self): return ["onTick", "onComplete"]
+    def available_events(self):
+        return ["onTick", "onComplete"]
 
     def render_html(self, comp_id, name, props, x, y, width, height, z_index):
-        pos = self.position_style(x, y, width, height, z_index,
-                                  "display:flex;align-items:center;justify-content:center;")
-        fs  = props.get("font_size", 32)
+        pos = self.position_style(
+            x,
+            y,
+            width,
+            height,
+            z_index,
+            "display:flex;align-items:center;justify-content:center;",
+        )
+        fs = props.get("font_size", 32)
         col = props.get("color", "#4154f1")
         sec = int(props.get("seconds", 60))
         mm, ss = divmod(sec, 60)

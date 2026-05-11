@@ -28,7 +28,7 @@ def diff_versions(snapshot_a: dict, snapshot_b: dict) -> dict:
     names_a = set(comps_a.keys())
     names_b = set(comps_b.keys())
 
-    added   = sorted(names_b - names_a)
+    added = sorted(names_b - names_a)
     removed = sorted(names_a - names_b)
     changed = []
 
@@ -39,23 +39,36 @@ def diff_versions(snapshot_a: dict, snapshot_b: dict) -> dict:
             changed.append(name)
 
     canvas_changed = (
-        snapshot_a.get("canvas_w")  != snapshot_b.get("canvas_w")  or
-        snapshot_a.get("canvas_h")  != snapshot_b.get("canvas_h")  or
-        snapshot_a.get("canvas_bg") != snapshot_b.get("canvas_bg")
+        snapshot_a.get("canvas_w") != snapshot_b.get("canvas_w")
+        or snapshot_a.get("canvas_h") != snapshot_b.get("canvas_h")
+        or snapshot_a.get("canvas_bg") != snapshot_b.get("canvas_bg")
     )
 
     return {
-        "added":          added,
-        "removed":        removed,
-        "changed":        sorted(changed),
+        "added": added,
+        "removed": removed,
+        "changed": sorted(changed),
         "canvas_changed": canvas_changed,
-        "total_changes":  len(added) + len(removed) + len(changed) + (1 if canvas_changed else 0),
+        "total_changes": len(added)
+        + len(removed)
+        + len(changed)
+        + (1 if canvas_changed else 0),
     }
 
 
 def _comp_changed(a: dict, b: dict) -> bool:
     """Retorna True se houve mudança relevante num componente."""
-    for key in ("x", "y", "width", "height", "z_index", "type", "properties", "events", "rules"):
+    for key in (
+        "x",
+        "y",
+        "width",
+        "height",
+        "z_index",
+        "type",
+        "properties",
+        "events",
+        "rules",
+    ):
         if a.get(key) != b.get(key):
             return True
     return False

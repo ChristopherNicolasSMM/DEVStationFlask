@@ -2,9 +2,13 @@
 controllers/page_controller.py — Páginas v3.0
 Gera auto-snapshot a cada save_page.
 """
-import json, datetime
+
+import datetime
+import json
+
 from flask import Blueprint, jsonify, request
-from models import db, Page, Component, Project
+
+from models import Component, Page, Project, db
 from versioning import create_auto_snapshot
 
 bp = Blueprint("page", __name__)
@@ -20,8 +24,8 @@ def list_pages(pid: int):
 @bp.route("/api/projetos/<int:pid>/paginas", methods=["POST"])
 def create_page(pid: int):
     project = Project.query.get_or_404(pid)
-    data    = request.get_json(force=True) or {}
-    count   = Page.query.filter_by(project_id=pid).count()
+    data = request.get_json(force=True) or {}
+    count = Page.query.filter_by(project_id=pid).count()
     page = Page(
         project_id=pid,
         name=data.get("name", f"Página {count + 1}"),
@@ -45,7 +49,15 @@ def get_page(pgid: int):
 def update_page_meta(pgid: int):
     page = Page.query.get_or_404(pgid)
     data = request.get_json(force=True) or {}
-    for key in ("name", "title", "slug", "is_home", "canvas_w", "canvas_h", "canvas_bg"):
+    for key in (
+        "name",
+        "title",
+        "slug",
+        "is_home",
+        "canvas_w",
+        "canvas_h",
+        "canvas_bg",
+    ):
         if key in data:
             setattr(page, key, data[key])
     db.session.commit()
@@ -74,7 +86,7 @@ def save_page(pgid: int):
         db.session.delete(comp)
     db.session.flush()
 
-    for c_data in (data.get("components") or []):
+    for c_data in data.get("components") or []:
         comp = Component(
             page_id=page.id,
             type=c_data.get("type", "label"),
@@ -102,24 +114,35 @@ def save_page(pgid: int):
 
 @bp.route("/api/paginas/<int:pgid>/duplicar", methods=["POST"])
 def duplicate_page(pgid: int):
-    src   = Page.query.get_or_404(pgid)
+    src = Page.query.get_or_404(pgid)
     count = Page.query.filter_by(project_id=src.project_id).count()
-    copy  = Page(
+    copy = Page(
         project_id=src.project_id,
         name=f"{src.name} (cópia)",
-        title=src.title, slug=f"{src.slug}-copia-{count}",
-        is_home=False, order=count,
-        canvas_w=src.canvas_w, canvas_h=src.canvas_h, canvas_bg=src.canvas_bg,
+        title=src.title,
+        slug=f"{src.slug}-copia-{count}",
+        is_home=False,
+        order=count,
+        canvas_w=src.canvas_w,
+        canvas_h=src.canvas_h,
+        canvas_bg=src.canvas_bg,
     )
     db.session.add(copy)
     db.session.flush()
 
     for comp in src.components:
         c_copy = Component(
-            page_id=copy.id, type=comp.type, name=comp.name,
-            x=comp.x, y=comp.y, width=comp.width, height=comp.height,
-            z_index=comp.z_index, properties=dict(comp.properties or {}),
-            events=dict(comp.events or {}), rules=list(comp.rules or []),
+            page_id=copy.id,
+            type=comp.type,
+            name=comp.name,
+            x=comp.x,
+            y=comp.y,
+            width=comp.width,
+            height=comp.height,
+            z_index=comp.z_index,
+            properties=dict(comp.properties or {}),
+            events=dict(comp.events or {}),
+            rules=list(comp.rules or []),
         )
         db.session.add(c_copy)
 

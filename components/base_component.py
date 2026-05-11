@@ -72,9 +72,17 @@ class BaseComponent(ABC):
 
     # ── Geração de Código ─────────────────────────────────────────
     @abstractmethod
-    def render_html(self, comp_id: str, name: str,
-                    props: Dict, x: int, y: int,
-                    width: int, height: int, z_index: int) -> str:
+    def render_html(
+        self,
+        comp_id: str,
+        name: str,
+        props: Dict,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        z_index: int,
+    ) -> str:
         """Gera o HTML do componente para exportação."""
 
     def render_css(self, comp_id: str, props: Dict) -> str:
@@ -89,7 +97,7 @@ class BaseComponent(ABC):
                 lines.append(
                     f'document.getElementById("{comp_id}")'
                     f'.addEventListener("{_js_event(event_name)}", function(e) {{\n'
-                    f'  {action_code}\n}});'
+                    f"  {action_code}\n}});"
                 )
         return "\n".join(lines)
 
@@ -97,20 +105,19 @@ class BaseComponent(ABC):
     def to_catalog_entry(self) -> Dict:
         """Serializa o tipo para o catálogo enviado ao frontend."""
         return {
-            "type":               self.type,
-            "label":              self.label,
-            "icon":               self.icon,
-            "group":              self.group,
+            "type": self.type,
+            "label": self.label,
+            "icon": self.icon,
+            "group": self.group,
             "default_properties": self.default_properties,
-            "default_size":       self.default_size,
-            "available_events":   self.available_events,
-            "available_rules":    self.available_rules,
+            "default_size": self.default_size,
+            "available_events": self.available_events,
+            "available_rules": self.available_rules,
         }
 
     # ── Helper comum para posicionamento ─────────────────────────
     @staticmethod
-    def position_style(x: int, y: int, w: int, h: int, z: int,
-                       extra: str = "") -> str:
+    def position_style(x: int, y: int, w: int, h: int, z: int, extra: str = "") -> str:
         """Gera o CSS inline de posicionamento absoluto."""
         return (
             f"position:absolute;left:{x}px;top:{y}px;"
@@ -122,18 +129,18 @@ class BaseComponent(ABC):
 # ── Mapeamento nomes de evento (Delphi-style → DOM-style) ───────────────────
 
 _EVENT_MAP = {
-    "onClick":       "click",
+    "onClick": "click",
     "onDoubleClick": "dblclick",
-    "onMouseEnter":  "mouseenter",
-    "onMouseLeave":  "mouseleave",
-    "onRightClick":  "contextmenu",
-    "onFocus":       "focus",
-    "onBlur":        "blur",
-    "onChange":      "change",
-    "onKeyUp":       "keyup",
-    "onKeyDown":     "keydown",
-    "onInput":       "input",
-    "onScroll":      "scroll",
+    "onMouseEnter": "mouseenter",
+    "onMouseLeave": "mouseleave",
+    "onRightClick": "contextmenu",
+    "onFocus": "focus",
+    "onBlur": "blur",
+    "onChange": "change",
+    "onKeyUp": "keyup",
+    "onKeyDown": "keydown",
+    "onInput": "input",
+    "onScroll": "scroll",
 }
 
 

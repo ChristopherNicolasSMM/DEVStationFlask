@@ -19,14 +19,13 @@ class Config:
 
     # ── Banco de Dados ────────────────────────────────────────────
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{os.path.join(BASE_DIR, 'instance/devstation.db')}"
+        "DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'instance/devstation.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # ── Canvas defaults ───────────────────────────────────────────
-    DEFAULT_CANVAS_W  = 1280
-    DEFAULT_CANVAS_H  = 900
+    DEFAULT_CANVAS_W = 1280
+    DEFAULT_CANVAS_H = 900
     DEFAULT_CANVAS_BG = "#ffffff"
 
     # ── Exportação ────────────────────────────────────────────────
@@ -46,14 +45,17 @@ class Config:
     ADDONS_DIR = os.path.join(BASE_DIR, "addons")
 
     # ── OData ─────────────────────────────────────────────────────
-    ODATA_METADATA_TTL_SECONDS = 300   # cache de 5 min
+    ODATA_METADATA_TTL_SECONDS = 300  # cache de 5 min
 
     # ── Build ─────────────────────────────────────────────────────
     BUILD_DIST_DIR = os.path.join(BASE_DIR, "dist")
-    BUILD_VERSION  = "3.0.0"
+    BUILD_VERSION = "3.0.0"
 
 
 class ProductionConfig(Config):
     """Sobreposição para produção."""
+
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", Config.SQLALCHEMY_DATABASE_URI)
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URL", Config.SQLALCHEMY_DATABASE_URI
+    )

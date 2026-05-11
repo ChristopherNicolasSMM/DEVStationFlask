@@ -10,13 +10,15 @@ controllers/odata_controller.py — API OData
 """
 
 from flask import Blueprint, jsonify, request
-from models import db, Project, ODataConnection
-from odata  import ODataConnectionManager, ODataScreenGenerator
+
+from models import ODataConnection, Project, db
+from odata import ODataConnectionManager, ODataScreenGenerator
 
 bp = Blueprint("odata", __name__)
 
 
 # ── CRUD ──────────────────────────────────────────────────────────────────────
+
 
 @bp.route("/api/projetos/<int:pid>/odata-connections")
 def list_connections(pid: int):
@@ -28,9 +30,9 @@ def list_connections(pid: int):
 @bp.route("/api/projetos/<int:pid>/odata-connections", methods=["POST"])
 def create_connection(pid: int):
     project = Project.query.get_or_404(pid)
-    data    = request.get_json(force=True) or {}
+    data = request.get_json(force=True) or {}
 
-    name    = (data.get("name") or "").strip()
+    name = (data.get("name") or "").strip()
     base_url = (data.get("base_url") or "").strip()
     if not name or not base_url:
         return jsonify({"error": "name e base_url são obrigatórios"}), 400
@@ -57,22 +59,24 @@ def delete_connection(cid: int):
 
 # ── Testar conexão ────────────────────────────────────────────────────────────
 
+
 @bp.route("/api/odata-connections/<int:cid>/testar", methods=["POST"])
 def test_connection(cid: int):
     """Testa a conexão, atualiza cache de metadata e retorna resultado."""
-    conn   = ODataConnection.query.get_or_404(cid)
-    mgr    = ODataConnectionManager(conn)
+    conn = ODataConnection.query.get_or_404(cid)
+    mgr = ODataConnectionManager(conn)
     result = mgr.test_connection()
     return jsonify(result)
 
 
 # ── Entidades ─────────────────────────────────────────────────────────────────
 
+
 @bp.route("/api/odata-connections/<int:cid>/entidades")
 def list_entities(cid: int):
     """Lista entidades disponíveis no servidor OData com anotações de UI."""
-    conn    = ODataConnection.query.get_or_404(cid)
-    mgr     = ODataConnectionManager(conn)
+    conn = ODataConnection.query.get_or_404(cid)
+    mgr = ODataConnectionManager(conn)
     try:
         entities = mgr.list_entities()
         return jsonify(entities)
@@ -81,6 +85,7 @@ def list_entities(cid: int):
 
 
 # ── Geração de telas ──────────────────────────────────────────────────────────
+
 
 @bp.route("/api/odata-connections/<int:cid>/gerar-tela", methods=["POST"])
 def generate_screen(cid: int):
@@ -94,12 +99,12 @@ def generate_screen(cid: int):
           "page_name": "Lista de Clientes"   (opcional)
         }
     """
-    conn    = ODataConnection.query.get_or_404(cid)
+    conn = ODataConnection.query.get_or_404(cid)
     project = Project.query.get_or_404(conn.project_id)
-    data    = request.get_json(force=True) or {}
+    data = request.get_json(force=True) or {}
 
-    entity    = (data.get("entity") or "").strip()
-    mode      = data.get("mode", "list")
+    entity = (data.get("entity") or "").strip()
+    mode = data.get("mode", "list")
     page_name = data.get("page_name") or None
 
     if not entity:
@@ -108,7 +113,7 @@ def generate_screen(cid: int):
         return jsonify({"error": "mode deve ser 'list', 'form' ou 'both'"}), 400
 
     try:
-        gen   = ODataScreenGenerator(conn, project)
+        gen = ODataScreenGenerator(conn, project)
         pages = gen.generate(entity, mode, page_name)
         return jsonify({"ok": True, "pages": pages})
     except ValueError as exc:

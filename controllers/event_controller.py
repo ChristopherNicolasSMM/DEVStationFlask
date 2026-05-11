@@ -1,7 +1,11 @@
 """controllers/event_controller.py"""
+
 from flask import Blueprint, jsonify, request
-from models import db, Component
+
+from models import Component, db
+
 bp = Blueprint("event", __name__)
+
 
 @bp.route("/api/componentes/<int:cid>/eventos", methods=["PUT"])
 def save_events(cid):

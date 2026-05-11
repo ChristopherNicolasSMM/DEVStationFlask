@@ -2,8 +2,11 @@
 controllers/project_controller.py — Projetos v3.0
 (carry-over de v2.2 com save_page gerando auto-snapshot)
 """
-from flask import Blueprint, jsonify, request, render_template, redirect, url_for
-from models import db, Project, Page, Menu, Component
+
+from flask import (Blueprint, jsonify, redirect, render_template, request,
+                   url_for)
+
+from models import Component, Menu, Page, Project, db
 from versioning import create_auto_snapshot
 
 bp = Blueprint("project", __name__)
@@ -29,8 +32,14 @@ def create_project():
     db.session.flush()
 
     # Página inicial padrão
-    home = Page(project_id=project.id, name="Página Inicial",
-                title="Página Inicial", slug="index", is_home=True, order=0)
+    home = Page(
+        project_id=project.id,
+        name="Página Inicial",
+        title="Página Inicial",
+        slug="index",
+        is_home=True,
+        order=0,
+    )
     db.session.add(home)
 
     # Menus padrão
@@ -63,16 +72,26 @@ def delete_project(pid: int):
 @bp.route("/designer/<int:pid>")
 def open_designer(pid: int):
     project = Project.query.get_or_404(pid)
-    pages   = Page.query.filter_by(project_id=pid).order_by(Page.order).all()
-    page    = next((p for p in pages if p.is_home), pages[0] if pages else None)
-    return render_template("designer.html", project=project, pages=pages,
-                           current_page=page, components=page.components if page else [])
+    pages = Page.query.filter_by(project_id=pid).order_by(Page.order).all()
+    page = next((p for p in pages if p.is_home), pages[0] if pages else None)
+    return render_template(
+        "designer.html",
+        project=project,
+        pages=pages,
+        current_page=page,
+        components=page.components if page else [],
+    )
 
 
 @bp.route("/designer/<int:pid>/<int:pgid>")
 def open_designer_page(pid: int, pgid: int):
     project = Project.query.get_or_404(pid)
-    pages   = Page.query.filter_by(project_id=pid).order_by(Page.order).all()
-    page    = Page.query.get_or_404(pgid)
-    return render_template("designer.html", project=project, pages=pages,
-                           current_page=page, components=page.components if page else [])
+    pages = Page.query.filter_by(project_id=pid).order_by(Page.order).all()
+    page = Page.query.get_or_404(pgid)
+    return render_template(
+        "designer.html",
+        project=project,
+        pages=pages,
+        current_page=page,
+        components=page.components if page else [],
+    )

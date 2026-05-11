@@ -17,12 +17,12 @@ Suporta retorno de ambos os formatos.
 """
 
 import datetime
+import json
 import logging
-import urllib.request
+import re
 import urllib.error
 import urllib.parse
-import json
-import re
+import urllib.request
 from typing import Optional
 
 log = logging.getLogger(__name__)
@@ -43,15 +43,22 @@ class ODataConnectionManager:
         """
         from config import Config
 
-        if not force_refresh and self.conn.metadata_cache and self.conn.metadata_cached_at:
-            age = (datetime.datetime.utcnow() - self.conn.metadata_cached_at).total_seconds()
+        if (
+            not force_refresh
+            and self.conn.metadata_cache
+            and self.conn.metadata_cached_at
+        ):
+            age = (
+                datetime.datetime.utcnow() - self.conn.metadata_cached_at
+            ).total_seconds()
             if age < Config.ODATA_METADATA_TTL_SECONDS:
                 return self.conn.metadata_cache
 
         data = self._discover_and_fetch_metadata()
 
         from models import db
-        self.conn.metadata_cache     = data
+
+        self.conn.metadata_cache = data
         self.conn.metadata_cached_at = datetime.datetime.utcnow()
         db.session.commit()
 
@@ -64,10 +71,10 @@ class ODataConnectionManager:
         Executa a cadeia completa de descoberta de metadados.
         Retorna dict normalizado {"entities": [...]} ou lança RuntimeError.
         """
-        base         = self.conn.base_url.rstrip("/")
-        tried:set    = set()
-        candidates   = []
-        errors       = []
+        base = self.conn.base_url.rstrip("/")
+        tried: set = set()
+        candidates = []
+        errors = []
 
         # ── Fase 1: @odata.context da URL raiz ───────────────────
         ctx_base = self._extract_context_base(base)
@@ -75,7 +82,7 @@ class ODataConnectionManager:
             log.info("@odata.context encontrado → base de metadata: %s", ctx_base)
             # Tenta versão .json primeiro (prioritário)
             candidates.append((ctx_base + ".json", "json"))
-            candidates.append((ctx_base,            "auto"))
+            candidates.append((ctx_base, "auto"))
 
         # ── Fase 2: Variantes JSON canônicas ─────────────────────
         for path in ("/$metadata.json", "/%24metadata.json", "/metadata.json"):
@@ -86,14 +93,14 @@ class ODataConnectionManager:
             candidates.append((base + path, "xml"))
 
         for url, fmt_hint in candidates:
-            clean = url.split("#")[0]   # Remove fragmento #Entity
+            clean = url.split("#")[0]  # Remove fragmento #Entity
             if clean in tried:
                 continue
             tried.add(clean)
             log.debug("Testando metadata URL: %s [%s]", clean, fmt_hint)
 
             try:
-                raw    = self._get(clean, accept=_accept_header(fmt_hint))
+                raw = self._get(clean, accept=_accept_header(fmt_hint))
                 parsed = self._parse_response(raw, clean)
                 log.info("Metadata obtido com sucesso: %s", clean)
                 return parsed
@@ -124,11 +131,9 @@ class ODataConnectionManager:
           retorna:           "http://localhost:8000/odata/$metadata"
         """
         try:
-            raw  = self._get(base_url, accept="application/json")
+            raw = self._get(base_url, accept="application/json")
             body = json.loads(raw)
-            ctx  = (body.get("@odata.context")
-                    or body.get("odata.context")
-                    or "")
+            ctx = body.get("@odata.context") or body.get("odata.context") or ""
             if not ctx:
                 return None
             # Remove fragmento #Entity
@@ -174,17 +179,21 @@ class ODataConnectionManager:
         entities = []
 
         # EDMX JSON com EntityType
-        if isinstance(data, dict) and ("EntityType" in data or "EntityContainer" in data):
+        if isinstance(data, dict) and (
+            "EntityType" in data or "EntityContainer" in data
+        ):
             ets = data.get("EntityType", [])
             if isinstance(ets, dict):
                 ets = [ets]
             for et in ets:
-                name  = et.get("Name") or et.get("name", "Unknown")
+                name = et.get("Name") or et.get("name", "Unknown")
                 props = et.get("Property") or et.get("properties", [])
                 if isinstance(props, dict):
                     props = [props]
                 fields = [_edm_prop_to_field(p) for p in props]
-                entities.append({"name": name, "label": name, "fields": fields, "ui": {}})
+                entities.append(
+                    {"name": name, "label": name, "fields": fields, "ui": {}}
+                )
             return {"entities": entities, "_source_format": "json"}
 
         # Lista direta
@@ -201,6 +210,7 @@ class ODataConnectionManager:
         """
         try:
             import xml.etree.ElementTree as ET
+
             root = ET.fromstring(xml_text)
         except Exception as exc:
             raise _ParseError(f"XML inválido: {exc}") from exc
@@ -208,10 +218,10 @@ class ODataConnectionManager:
         entities = []
         # Busca EntityType em todos os níveis e com qualquer namespace
         for el in root.iter():
-            local = el.tag.split("}")[-1]   # remove namespace
+            local = el.tag.split("}")[-1]  # remove namespace
             if local != "EntityType":
                 continue
-            name  = el.get("Name", "Unknown")
+            name = el.get("Name", "Unknown")
             fields = []
             for child in el:
                 child_local = child.tag.split("}")[-1]
@@ -230,11 +240,11 @@ class ODataConnectionManager:
         meta = self.fetch_metadata()
         return [
             {
-                "name":        e.get("name", ""),
-                "label":       e.get("label", e.get("name", "")),
+                "name": e.get("name", ""),
+                "label": e.get("label", e.get("name", "")),
                 "description": e.get("description", ""),
-                "fields":      e.get("fields", []),
-                "ui":          e.get("ui", {}),
+                "fields": e.get("fields", []),
+                "ui": e.get("ui", {}),
             }
             for e in meta.get("entities", [])
         ]
@@ -249,8 +259,9 @@ class ODataConnectionManager:
         """GET na coleção com parâmetros OData ($filter, $orderby, etc.)."""
         qs = ""
         if params:
-            parts = [f"{k}={urllib.parse.quote(str(v))}"
-                     for k, v in params.items() if v]
+            parts = [
+                f"{k}={urllib.parse.quote(str(v))}" for k, v in params.items() if v
+            ]
             if parts:
                 qs = "?" + "&".join(parts)
         raw = self._get(self._build_url(f"{entity}{qs}"))
@@ -269,14 +280,14 @@ class ODataConnectionManager:
         Testa a conexão e retorna detalhes do formato encontrado.
         """
         try:
-            meta    = self.fetch_metadata(force_refresh=True)
-            n       = len(meta.get("entities", []))
-            fmt     = meta.get("_source_format", "json")
+            meta = self.fetch_metadata(force_refresh=True)
+            n = len(meta.get("entities", []))
+            fmt = meta.get("_source_format", "json")
             return {
-                "ok":             True,
+                "ok": True,
                 "entities_count": n,
-                "source_format":  fmt,
-                "message":        f"{n} entidade(s) encontrada(s) (formato: {fmt})",
+                "source_format": fmt,
+                "message": f"{n} entidade(s) encontrada(s) (formato: {fmt})",
             }
         except RuntimeError as exc:
             return {"ok": False, "error": str(exc)}
@@ -295,6 +306,7 @@ class ODataConnectionManager:
             h["Authorization"] = f"Bearer {self.conn.auth_value}"
         elif self.conn.auth_type == "basic" and self.conn.auth_value:
             import base64
+
             creds = base64.b64encode(self.conn.auth_value.encode()).decode()
             h["Authorization"] = f"Basic {creds}"
         return h
@@ -307,17 +319,18 @@ class ODataConnectionManager:
 
     def _request(self, method: str, url: str, body: dict) -> str:
         headers = {
-            "Accept":       "application/json",
+            "Accept": "application/json",
             "Content-Type": "application/json",
             **self._auth_headers(),
         }
         data = json.dumps(body).encode("utf-8")
-        req  = urllib.request.Request(url, data=data, headers=headers, method=method)
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
         with urllib.request.urlopen(req, timeout=10) as resp:
             return resp.read().decode("utf-8")
 
 
 # ── Helpers de módulo ─────────────────────────────────────────
+
 
 def _accept_header(fmt_hint: str) -> str:
     if fmt_hint == "xml":
@@ -329,25 +342,33 @@ def _accept_header(fmt_hint: str) -> str:
 
 def _edm_prop_to_field(prop: dict) -> dict:
     """Converte atributos de <Property> EDMX para campo interno DSB."""
-    name    = prop.get("Name") or prop.get("name", "")
+    name = prop.get("Name") or prop.get("name", "")
     raw_type = prop.get("Type") or prop.get("type", "Edm.String")
     nullable = str(prop.get("Nullable", "true")).lower()
-    maxlen   = prop.get("MaxLength")
+    maxlen = prop.get("MaxLength")
 
     EDM_MAP = {
-        "Edm.String": "TEXT", "Edm.Int16": "NUMBER", "Edm.Int32": "NUMBER",
-        "Edm.Int64": "NUMBER", "Edm.Decimal": "NUMBER", "Edm.Double": "NUMBER",
-        "Edm.Single": "NUMBER", "Edm.Boolean": "BOOLEAN", "Edm.Date": "DATE",
-        "Edm.DateTime": "DATE", "Edm.DateTimeOffset": "DATE",
-        "Edm.Guid": "TEXT", "Edm.Binary": "TEXT",
+        "Edm.String": "TEXT",
+        "Edm.Int16": "NUMBER",
+        "Edm.Int32": "NUMBER",
+        "Edm.Int64": "NUMBER",
+        "Edm.Decimal": "NUMBER",
+        "Edm.Double": "NUMBER",
+        "Edm.Single": "NUMBER",
+        "Edm.Boolean": "BOOLEAN",
+        "Edm.Date": "DATE",
+        "Edm.DateTime": "DATE",
+        "Edm.DateTimeOffset": "DATE",
+        "Edm.Guid": "TEXT",
+        "Edm.Binary": "TEXT",
     }
     dsb_type = EDM_MAP.get(raw_type, "TEXT")
 
     return {
-        "name":       name,
-        "label":      name,
-        "type":       dsb_type,
-        "required":   nullable == "false",
+        "name": name,
+        "label": name,
+        "type": dsb_type,
+        "required": nullable == "false",
         "max_length": int(maxlen) if maxlen and str(maxlen).isdigit() else None,
     }
 
